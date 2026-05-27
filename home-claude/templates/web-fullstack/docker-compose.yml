@@ -1,0 +1,125 @@
+services:
+  # ============================================================
+  # Backend API (Go)
+  # ============================================================
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: ${PROJECT_NAME:-app}_api
+    ports:
+      - "${API_PORT:-8080}:8080"
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-app}:${POSTGRES_PASSWORD:-app}@db:5432/${POSTGRES_DB:-app}?sslmode=disable
+      JWT_SECRET: ${JWT_SECRET}
+      LOG_LEVEL: ${LOG_LEVEL:-debug}
+      ENV: local
+    volumes:
+      - ./backend:/app
+      - go-mod-cache:/go/pkg/mod
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - internal
+
+  # ============================================================
+  # Frontend (React + Vite)
+  # ============================================================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: ${PROJECT_NAME:-app}_frontend
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    environment:
+      VITE_API_URL: http://localhost:${API_PORT:-8080}
+    volumes:
+      - ./frontend:/app
+      - frontend-node-modules:/app/node_modules
+    networks:
+      - internal
+
+  # ============================================================
+  # Database (Postgres)
+  # ============================================================
+  db:
+    image: postgres:16-alpine
+    container_name: ${PROJECT_NAME:-app}_db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-app}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-app}
+      POSTGRES_DB: ${POSTGRES_DB:-app}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-app}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal
+
+  # ============================================================
+  # Gateway (Caddy) — local mirror of production gateway
+  # ============================================================
+  gateway:
+    image: caddy:2-alpine
+    container_name: ${PROJECT_NAME:-app}_gateway
+    ports:
+      - "${GATEWAY_PORT:-8443}:443"
+      - "${GATEWAY_HTTP_PORT:-8080}:80"
+    volumes:
+      - ./gateway/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+    depends_on:
+      - api
+    networks:
+      - internal
+    profiles:
+      - with-gateway
+
+  # ============================================================
+  # Dev tools (optional, enable with --profile dev-tools)
+  # ============================================================
+  adminer:
+    image: adminer:latest
+    container_name: ${PROJECT_NAME:-app}_adminer
+    ports:
+      - "${ADMINER_PORT:-8081}:8080"
+    depends_on:
+      - db
+    networks:
+      - internal
+    profiles:
+      - dev-tools
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: ${PROJECT_NAME:-app}_mailhog
+    ports:
+      - "${MAILHOG_SMTP_PORT:-1025}:1025"
+      - "${MAILHOG_UI_PORT:-8025}:8025"
+    networks:
+      - internal
+    profiles:
+      - dev-tools
+
+# ============================================================
+# Volumes
+# ============================================================
+volumes:
+  db-data:
+  go-mod-cache:
+  frontend-node-modules:
+  caddy-data:
+
+# ============================================================
+# Networks
+# ============================================================
+networks:
+  internal:
+    driver: bridge
