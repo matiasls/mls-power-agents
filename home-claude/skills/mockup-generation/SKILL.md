@@ -19,21 +19,41 @@ Skill operativo del UI Designer para generar mockups visuales navegables antes d
 - Cuando hay un Figma/Sketch existente que el usuario considera la fuente de verdad.
 - Cuando el `ui-spec` está incompleto (volver a hacer UI spec antes).
 
+## Templates de recursos
+
+Los templates HTML/CSS/JS viven en `resources/` junto a este SKILL.md. Leer el archivo de recurso cuando lo necesites en el paso correspondiente:
+
+| Recurso | Qué es | Se usa en |
+|---|---|---|
+| `resources/tokens.css` | Template de CSS variables del design system | Paso 4 |
+| `resources/screen-shell.html` | Esqueleto base de cada pantalla (Tailwind CDN + tokens + banner MOCKUP) | Paso 5 |
+| `resources/index.html` | Template del índice navegable | Paso 7 |
+| `resources/mocks-readme.md` | Template del `mocks/README.md` | Paso 8 |
+| `resources/state.js` | Estado del prototipo en localStorage (modo interactivo) | Modo interactivo |
+| `resources/interactive-screen.html` | Ejemplo completo de pantalla interactiva con Alpine.js | Modo interactivo |
+| `resources/feedback-template.md` | Template de `mocks/feedback.md` | Iteración |
+
 ## Procedimiento
 
 ### Paso 0: Decidir modo (estático vs interactivo)
 
 Antes de empezar, decidir con el usuario:
 
-- **Modo estático**: solo navegación entre pantallas, datos hard-coded. Default para apps mayormente lectura (dashboards, reports).
-- **Modo interactivo**: persistencia en localStorage, forms funcionales, reactividad. Default para apps CRUD-heavy o donde validar interacciones importa.
+- **Modo estático**: solo navegación entre pantallas, datos hard-coded en HTML.
+- **Modo interactivo**: estado JS, persistencia en localStorage, forms que "guardan", listas que se actualizan.
 
-Si el usuario no especifica:
-- ¿La app tiene flujos significativos de crear/editar/eliminar? → interactivo.
-- ¿Las interacciones son triviales (clic → próxima pantalla)? → estático.
-- ¿En duda? Preguntar.
+**Activar modo interactivo si**:
+- El proyecto tiene flujos de creación/edición/borrado significativos (CRUD-heavy)
+- El usuario quiere validar interacciones, no solo layout
+- Hay forms con validación, condicionalidad, o cálculos en vivo
+- El UX spec define estados que dependen de acciones del usuario (ej: agregar un item y ver cómo cambia un total)
 
-Esta decisión se documenta en `mocks/README.md`.
+**Quedarse en modo estático si**:
+- El proyecto es mayormente lectura (dashboards, reports)
+- Las interacciones son triviales (un botón = una página nueva)
+- El usuario solo quiere ver el look-and-feel
+
+¿En duda? Preguntar. Esta decisión se documenta en `mocks/README.md`.
 
 ### Paso 1: Pre-condiciones
 
@@ -70,7 +90,6 @@ mocks/
 └── screens/                     # Pantallas
     ├── login.html
     ├── dashboard.html
-    ├── productor-detail.html
     ├── states/                  # Estados específicos
     │   ├── dashboard-empty.html
     │   ├── dashboard-loading.html
@@ -80,108 +99,11 @@ mocks/
 
 ### Paso 4: Generar `tokens.css` con CSS variables
 
-```css
-/* tokens.css — generated from 03-ui-spec.md */
-:root {
-  /* Color: Primary */
-  --primary-50: #...;
-  --primary-100: #...;
-  /* ... toda la ramp */
-  
-  /* Color: Neutral */
-  --neutral-0: #ffffff;
-  /* ... */
-  
-  /* Color: Semantic */
-  --success: #...;
-  --warning: #...;
-  --error: #...;
-  --info: #...;
-  
-  /* Typography */
-  --font-sans: 'Inter', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
-  
-  /* Spacing (8-point grid) */
-  --space-1: 4px;
-  --space-2: 8px;
-  /* ... */
-  
-  /* Radius */
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-}
+Usar `resources/tokens.css` como base, completando los valores reales del `03-ui-spec.md` (ramps de primary/neutral, semantic colors, typography, spacing en 8-point grid, radius, dark mode si aplica).
 
-/* Dark mode (si aplica) */
-[data-theme="dark"] {
-  --neutral-0: #0a0a0a;
-  /* ... */
-}
-```
+### Paso 5: Generar cada pantalla
 
-### Paso 5: Template base por pantalla
-
-Cada `screens/*.html` sigue este esqueleto:
-
-```html
-<!DOCTYPE html>
-<html lang="es" data-theme="light">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><Nombre pantalla> · <Project></title>
-  
-  <!-- Tailwind via CDN: sin build step -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- Tokens del design system -->
-  <link rel="stylesheet" href="../tokens.css">
-  
-  <!-- Configuración de Tailwind para que use los tokens -->
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            primary: {
-              50: 'var(--primary-50)',
-              /* ... */
-              600: 'var(--primary-600)',
-              700: 'var(--primary-700)',
-            },
-            neutral: { /* ... */ },
-            success: 'var(--success)',
-            error: 'var(--error)',
-          },
-          fontFamily: {
-            sans: ['Inter', 'system-ui', 'sans-serif'],
-          },
-        }
-      }
-    }
-  </script>
-  
-  <style>
-    body { font-family: var(--font-sans); }
-  </style>
-</head>
-<body class="bg-neutral-50 text-neutral-900 min-h-screen">
-  
-  <!-- Banner identificando que es mockup, NO producción -->
-  <div class="bg-amber-100 border-b border-amber-300 px-4 py-2 text-sm text-amber-900">
-    <strong>MOCKUP</strong> · Pantalla: <code><Nombre pantalla></code> · 
-    <a href="../index.html" class="underline">Volver al índice</a>
-  </div>
-  
-  <!-- Contenido real de la pantalla acá -->
-  <main class="max-w-5xl mx-auto p-6">
-    <!-- ... -->
-  </main>
-  
-</body>
-</html>
-```
+Cada `screens/*.html` sigue el esqueleto de `resources/screen-shell.html`: Tailwind via CDN (sin build step), link a `../tokens.css`, config de Tailwind mapeando colores a las CSS variables, y el banner MOCKUP con link de vuelta al índice. Reemplazar los placeholders `<Nombre pantalla>` y `<Project>`.
 
 ### Paso 6: Datos de ejemplo realistas
 
@@ -195,106 +117,11 @@ Los datos plausibles hacen que el usuario VEA cómo se siente la app real, no un
 
 ### Paso 7: Index navegable
 
-`mocks/index.html`:
-
-```html
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>Mockups · <Project></title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-neutral-50 p-8">
-  <div class="max-w-4xl mx-auto">
-    <h1 class="text-3xl font-bold mb-2">Mockups: <Project></h1>
-    <p class="text-neutral-600 mb-8">
-      Generado por el UI Designer · Fase 3A · <fecha>
-    </p>
-    
-    <section class="mb-12">
-      <h2 class="text-xl font-semibold mb-4">Pantallas principales (happy path)</h2>
-      <ul class="space-y-2">
-        <li><a href="screens/login.html" class="text-primary-600 underline">Login</a> — punto de entrada</li>
-        <li><a href="screens/dashboard.html" class="text-primary-600 underline">Dashboard</a> — vista principal post-login</li>
-        <li><a href="screens/productor-detail.html" class="text-primary-600 underline">Productor detail</a> — ficha con score</li>
-        <!-- ... -->
-      </ul>
-    </section>
-    
-    <section class="mb-12">
-      <h2 class="text-xl font-semibold mb-4">Estados</h2>
-      <ul class="space-y-2">
-        <li><a href="screens/states/dashboard-empty.html">Dashboard sin datos</a></li>
-        <li><a href="screens/states/dashboard-loading.html">Dashboard cargando</a></li>
-        <li><a href="screens/states/dashboard-error.html">Dashboard con error</a></li>
-      </ul>
-    </section>
-    
-    <section>
-      <h2 class="text-xl font-semibold mb-4">Componentes reutilizables</h2>
-      <p class="text-sm text-neutral-600 mb-2">Para referencia del Frontend Developer al implementar:</p>
-      <ul class="space-y-2">
-        <li><a href="components/button.html">Button (todas las variantes)</a></li>
-        <li><a href="components/card.html">Card</a></li>
-      </ul>
-    </section>
-  </div>
-</body>
-</html>
-```
+Generar `mocks/index.html` a partir de `resources/index.html`, con secciones: pantallas principales (happy path), estados, y componentes reutilizables. Ajustar los links a las pantallas reales del proyecto.
 
 ### Paso 8: README de los mocks
 
-`mocks/README.md`:
-
-```markdown
-# Mockups · <Project>
-
-Mockups HTML+Tailwind navegables de las pantallas principales. 
-Generados en Fase 3A por el UI Designer.
-
-## Cómo abrirlos
-
-Abrí `index.html` en cualquier navegador moderno. No requiere servidor.
-
-\`\`\`bash
-open mocks/index.html       # macOS
-xdg-open mocks/index.html   # Linux
-\`\`\`
-
-## Qué SON estos mockups
-
-- Visualización del look-and-feel y la estructura de las pantallas
-- Datos de ejemplo realistas
-- Referencia visual para el Frontend Developer al implementar el frontend real
-- Base para iteración rápida del diseño (cambiar mock < cambiar React)
-
-## Qué NO son
-
-- Código a deployar
-- Pixel-perfect spec final (eso es responsabilidad del Frontend Developer al implementar)
-- Funcionalidad interactiva real (no hay JS de negocio acá)
-- Versión final del diseño (van a iterar)
-
-## Pantallas incluidas
-
-[lista con descripciones cortas]
-
-## Estados ilustrados
-
-[lista de estados como empty, loading, error]
-
-## Limitaciones conocidas
-
-- Tailwind via CDN: en producción se usará build process
-- Iconos: usamos lucide via CDN; en producción se decidirá librería final
-- Responsive: probado en mobile (375px) y desktop (1280px), no en breakpoints intermedios
-
-## Cómo iterar
-
-Si querés cambios, abrí un issue o decímelo en chat. Yo (el UI Designer) regenero.
-```
+Generar `mocks/README.md` a partir de `resources/mocks-readme.md`. Debe cubrir: cómo abrirlos, qué SON, qué NO son, pantallas incluidas, estados ilustrados, limitaciones conocidas y cómo iterar.
 
 ## Reglas duras del mockup
 
@@ -310,26 +137,13 @@ Si querés cambios, abrí un issue o decímelo en chat. Yo (el UI Designer) rege
 
 - **Mockear todas las pantallas**: empezá con 5-10. Las menos críticas pueden esperar a iteración 2.
 - **Pixel-perfect**: estos son mocks, no specs visuales finales. el Frontend Developer puede hacer ajustes finos.
-- **JavaScript de producción**: NO uses libs de framework (React, Vue), NO conectes con APIs reales, NO uses build steps. **El JS de simulación SÍ está permitido** (ver sección "Modo interactivo" más abajo).
+- **JavaScript de producción**: NO uses libs de framework (React, Vue), NO conectes con APIs reales, NO uses build steps. **El JS de simulación SÍ está permitido** (ver "Modo interactivo").
 - **Reinventar componentes en cada pantalla**: usá los snippets de `components/`.
 - **Olvidar dark mode si está en el ui-spec**: si el UI Designer dijo dark mode v1, los mocks tienen dark mode.
 
 ## Modo interactivo (desde Sesión 7)
 
-Los mockups pueden ser **estáticos** (solo navegación entre pantallas, datos hard-coded en HTML) o **interactivos** (estado JS, forms que "guardan" en memoria, listas que se actualizan).
-
-### Cuándo usar modo interactivo
-
-**Activar modo interactivo si**:
-- El proyecto tiene flujos de creación/edición/borrado significativos (CRUD-heavy)
-- El usuario quiere validar interacciones, no solo layout
-- Hay forms con validación, condicionalidad, o cálculos en vivo
-- El UX spec define estados que dependen de acciones del usuario (ej: agregar un item y ver cómo cambia un total)
-
-**Quedarse en modo estático si**:
-- El proyecto es mayormente lectura (dashboards, reports)
-- Las interacciones son triviales (un botón = una página nueva)
-- El usuario solo quiere ver el look-and-feel
+Aplica solo si en el Paso 0 se decidió modo interactivo (los criterios de decisión están ahí).
 
 ### Reglas duras del modo interactivo
 
@@ -355,187 +169,17 @@ Los mockups pueden ser **estáticos** (solo navegación entre pantallas, datos h
 
 ### Estructura adicional en modo interactivo
 
-```
-mocks/
-├── README.md
-├── index.html
-├── tokens.css
-├── prototype/                    # ← Carpeta nueva para JS de simulación
-│   ├── state.js                  # Estado global (localStorage wrappers)
-│   ├── seed-data.js              # Datos iniciales realistas
-│   └── reset.js                  # Botón reset
-├── components/
-└── screens/
-```
+Agregar a `mocks/` la carpeta `prototype/` con: `state.js` (estado global, wrappers de localStorage — partir de `resources/state.js` y adaptar las operaciones de dominio), `seed-data.js` (datos iniciales realistas) y `reset.js` (botón reset).
 
-### Template `prototype/state.js`
-
-```javascript
-// state.js — Estado del prototipo persistido en localStorage
-// IMPORTANTE: esto es prototipo. La lógica real la implementa el Backend Developer.
-
-const STORAGE_KEY = 'prototype_state_v1';
-
-function loadState() {
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if (!raw) return getSeedState();
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return getSeedState();
-  }
-}
-
-function saveState(state) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-}
-
-function getSeedState() {
-  // Lee desde seed-data.js
-  return window.SEED_DATA || { items: [], users: [] };
-}
-
-function resetPrototype() {
-  localStorage.removeItem(STORAGE_KEY);
-  location.reload();
-}
-
-// API simple para usar desde las pantallas
-window.proto = {
-  load: loadState,
-  save: saveState,
-  reset: resetPrototype,
-  
-  // Ejemplos de operaciones de dominio
-  addItem(item) {
-    const state = loadState();
-    state.items.push({ ...item, id: crypto.randomUUID(), createdAt: new Date().toISOString() });
-    saveState(state);
-    return state;
-  },
-  
-  removeItem(id) {
-    const state = loadState();
-    state.items = state.items.filter(i => i.id !== id);
-    saveState(state);
-    return state;
-  },
-};
-```
-
-### Template de pantalla interactiva (con Alpine.js)
-
-```html
-<!DOCTYPE html>
-<html lang="es" data-theme="light">
-<head>
-  <meta charset="UTF-8">
-  <title>Lista de gastos · Prototipo</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-  <link rel="stylesheet" href="../tokens.css">
-  <script src="../prototype/seed-data.js"></script>
-  <script src="../prototype/state.js"></script>
-</head>
-<body class="bg-neutral-50 text-neutral-900 min-h-screen">
-  
-  <!-- Banner prototipo -->
-  <div class="bg-amber-100 border-b border-amber-300 px-4 py-2 text-sm text-amber-900 flex justify-between">
-    <span><strong>PROTOTIPO INTERACTIVO</strong> · Datos en tu navegador, no en servidor</span>
-    <button onclick="proto.reset()" class="underline">Reset prototipo</button>
-  </div>
-  
-  <main class="max-w-3xl mx-auto p-6"
-        x-data="{ 
-          items: proto.load().items,
-          newDescription: '',
-          newAmount: '',
-          addItem() {
-            if (!this.newDescription || !this.newAmount) return;
-            const state = proto.addItem({
-              description: this.newDescription,
-              amount: parseFloat(this.newAmount),
-            });
-            this.items = state.items;
-            this.newDescription = '';
-            this.newAmount = '';
-          },
-          removeItem(id) {
-            const state = proto.removeItem(id);
-            this.items = state.items;
-          },
-          get total() {
-            return this.items.reduce((sum, i) => sum + i.amount, 0);
-          }
-        }">
-    
-    <h1 class="text-2xl font-bold mb-6">Mis gastos</h1>
-    
-    <!-- Lista reactiva -->
-    <div class="space-y-2 mb-6">
-      <template x-for="item in items" :key="item.id">
-        <div class="flex justify-between items-center p-3 bg-white rounded border">
-          <span x-text="item.description"></span>
-          <div class="flex items-center gap-3">
-            <span class="font-semibold" x-text="'$' + item.amount.toFixed(2)"></span>
-            <button @click="removeItem(item.id)" class="text-error text-sm">Eliminar</button>
-          </div>
-        </div>
-      </template>
-      <div x-show="items.length === 0" class="text-center py-8 text-neutral-500">
-        Sin gastos todavía. Agregá uno abajo.
-      </div>
-    </div>
-    
-    <!-- Total reactivo -->
-    <div class="text-xl font-bold mb-6 text-right">
-      Total: <span x-text="'$' + total.toFixed(2)"></span>
-    </div>
-    
-    <!-- Form de agregar -->
-    <div class="bg-white p-4 rounded border space-y-3">
-      <input type="text" x-model="newDescription" placeholder="Descripción"
-             class="w-full px-3 py-2 border rounded">
-      <input type="number" x-model="newAmount" placeholder="Monto" step="0.01"
-             class="w-full px-3 py-2 border rounded">
-      <button @click="addItem()" 
-              class="w-full bg-primary-600 text-white py-2 rounded hover:bg-primary-700">
-        Agregar gasto
-      </button>
-    </div>
-  </main>
-</body>
-</html>
-```
+Para las pantallas interactivas, usar `resources/interactive-screen.html` como ejemplo completo (lista CRUD con Alpine.js, total reactivo, banner PROTOTIPO con botón reset).
 
 ### Iteración del prototipo
 
 Una vez generado:
 1. El usuario abre `mocks/index.html`, hace clic, prueba flujos.
-2. Anota qué funciona y qué no en `mocks/feedback.md` (template abajo).
+2. Anota qué funciona y qué no en `mocks/feedback.md` (crear desde `resources/feedback-template.md` al primer feedback).
 3. Vos (el UI Designer) iterás los archivos afectados.
 4. **NUNCA dejes el prototipo en estado "roto"**: cada commit del mock debe estar funcionando.
-
-Template `mocks/feedback.md` (creado al primer feedback):
-
-```markdown
-# Feedback del prototipo · iteración N
-
-**Fecha**: YYYY-MM-DD
-**Probado por**: <nombre>
-
-## Funciona como esperaba
-- ...
-
-## No funciona / poco intuitivo
-- ...
-
-## Falta
-- ...
-
-## Decisiones tomadas en esta iteración
-- ...
-```
 
 ### Tradeoffs explícitos a comunicar al usuario
 
@@ -556,7 +200,7 @@ Cuando entregás el prototipo interactivo, comunicar explícitamente:
 - [ ] El usuario pudo completar al menos 1 flujo crítico sin tu ayuda
 - [ ] El feedback del usuario fue capturado en `mocks/feedback.md`
 
-
+## Checklist antes de cerrar Fase 3A
 
 Antes de cerrar Fase 3A, vos misma revisás:
 

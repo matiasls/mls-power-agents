@@ -110,7 +110,7 @@ header "Plan"
 log "Will install:"
 log "  Global CLAUDE.md         → ${DEST_DIR}/CLAUDE.md"
 log "  Agents (19)              → ${DEST_DIR}/agents/"
-log "  Skills (27)              → ${DEST_DIR}/skills/"
+log "  Skills (21)              → ${DEST_DIR}/skills/"
 log "  Templates (4)            → ${DEST_DIR}/templates/"
 log ""
 
@@ -238,6 +238,21 @@ info "Installed $AGENT_COUNT agents"
 
 header "Installing skills"
 
+# Skills merged/removed in previous versions. Without this cleanup, stale
+# copies in ~/.claude/skills/ keep loading their descriptions every session
+# and keep auto-invoking, defeating the consolidation.
+DEPRECATED_SKILLS="execution-runbook security-checklist threat-modeling relevance-filter plan-b-addendum cross-review"
+for dep in $DEPRECATED_SKILLS; do
+  if [ -d "$DEST_DIR/skills/$dep" ]; then
+    if [ "$DRY_RUN" = true ]; then
+      info "  [dry-run] would remove deprecated skill: skills/$dep/"
+    else
+      rm -rf "$DEST_DIR/skills/$dep"
+      ok "  removed deprecated skill: skills/$dep/"
+    fi
+  fi
+done
+
 SKILL_COUNT=0
 for skill_dir in "$SOURCE_DIR"/skills/*/; do
   [ -d "$skill_dir" ] || continue
@@ -272,7 +287,7 @@ if [ "$DRY_RUN" = false ]; then
   header "Verification"
 
   EXPECTED_AGENTS=19
-  EXPECTED_SKILLS=27
+  EXPECTED_SKILLS=21
   EXPECTED_TEMPLATES=4
 
   ACTUAL_AGENTS=$(find "$DEST_DIR/agents" -maxdepth 1 -name "*.md" 2>/dev/null | wc -l | tr -d ' ')

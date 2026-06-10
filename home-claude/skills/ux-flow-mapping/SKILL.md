@@ -11,11 +11,7 @@ Skill operativo del UX Designer para traducir UCs funcionales en flows navegable
 
 ### Paso 1: Inventario de UCs
 
-Leer `01-functional-spec.md` y listar todos los UCs (UC-001, UC-002, ...). Para cada uno, anotar:
-- Actor primario
-- Goal
-- Pre-condiciones
-- Post-condiciones
+Leer `01-functional-spec.md` y listar todos los UCs (UC-001, UC-002, ...). Para cada uno, anotar: actor primario, goal, pre-condiciones, post-condiciones.
 
 ### Paso 2: Para cada UC, mapear el flow
 
@@ -69,9 +65,7 @@ Listar y diseñar respuesta para:
 
 ### Paso 3: Diagramar el flow
 
-Notación recomendada: ASCII art para específicos, Mermaid para complejos.
-
-**ASCII (default, fácil de versionar)**:
+ASCII art como default (fácil de versionar); Mermaid `flowchart` solo cuando el flow es complejo.
 
 ```
 [Login Page]
@@ -81,19 +75,6 @@ Notación recomendada: ASCII art para específicos, Mermaid para complejos.
      ├── Submit invalid ──> [Login + Error] ──> Retry
      │
      └── Forgot password ──> [Reset Page] ──> Email sent ──> [Login]
-```
-
-**Mermaid (cuando el flow es complejo)**:
-
-```mermaid
-flowchart TD
-    A[Login Page] --> B{Credentials?}
-    B -->|Valid| C[Dashboard]
-    B -->|Invalid| D[Login + Error]
-    D --> A
-    A --> E[Forgot Password]
-    E --> F[Email sent]
-    F --> A
 ```
 
 ### Paso 4: Identificar componentes reutilizables
@@ -119,18 +100,14 @@ Identificar decisiones de UX que tienen implicancias arquitectónicas:
 
 Estos puntos van al gate report del Software Architect para resolución conjunta antes de Gate 3B.
 
-### Paso 6: Validación de accesibilidad
+### Paso 6: Validación de accesibilidad (WCAG 2.1 AA)
 
-Para cada flow, verificar:
+Para cada flow, verificar como mínimo:
 
-- [ ] Es navegable solo con teclado (Tab + Enter + Esc)
-- [ ] Screen reader entiende la estructura (h1, h2, landmarks, ARIA)
-- [ ] Errores son anunciados (role="alert" o aria-live)
-- [ ] Focus management: después de submit, el focus va a confirmation
-- [ ] No hay traps de teclado en modales
-- [ ] Contraste de color verificado contra fondos reales
-- [ ] No depende solo del color (íconos + texto, no solo color rojo)
-- [ ] Form labels asociados a inputs
+- [ ] Navegable solo con teclado (Tab + Enter + Esc), sin traps en modales
+- [ ] Estructura entendible por screen reader (headings, landmarks, ARIA) y labels asociados a inputs
+- [ ] Errores anunciados (role="alert" / aria-live) y focus management post-submit
+- [ ] Contraste verificado contra fondos reales; no depender solo del color
 - [ ] Timeouts configurables o avisos antes de expirar
 
 ## Output esperado
@@ -138,11 +115,7 @@ Para cada flow, verificar:
 `docs/context/03-ux-spec.md` con:
 
 1. **Information Architecture** (sitemap)
-2. **Por cada flow F-NNN**:
-   - Diagrama
-   - Lista de pantallas
-   - Estados por pantalla
-   - Edge cases
+2. **Por cada flow F-NNN**: diagrama, lista de pantallas, estados por pantalla, edge cases
 3. **Inventario de componentes reutilizables** (pasar a el UI Designer)
 4. **Decisiones cross-architecture** (revisar con el Software Architect)
 5. **Checklist de accesibilidad WCAG 2.1 AA** aplicado
@@ -160,7 +133,7 @@ Para cada flow, verificar:
 
 - [ ] Todos los UCs del Business Analyst tienen un flow asociado
 - [ ] Cada flow tiene happy + alternative paths
-- [ ] Cada pantalla tiene los 5 estados obligatorios diseñados
+- [ ] Cada pantalla tiene los estados obligatorios diseñados
 - [ ] Edge cases listados y respondidos
 - [ ] Componentes reutilizables identificados
 - [ ] Decisiones cross-architecture marcadas

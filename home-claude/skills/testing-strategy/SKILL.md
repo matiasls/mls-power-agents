@@ -7,19 +7,11 @@ description: Define a project's testing strategy (unit/integration/E2E pyramid),
 
 Skill para definir y enforcer la estrategia de testing de un proyecto. La filosofía: tests son inversión, no impuesto. Mal balanceados, son carga; bien balanceados, te dejan moverte rápido.
 
-## Pirámide de tests (default del setup)
+## Distribución de la pirámide (default del setup)
 
-```
-            ┌──────────────┐
-            │   E2E (5%)   │   <- caros, lentos, frágiles. Solo flujos críticos.
-            ├──────────────┤
-            │ Integration  │   <- boundaries entre módulos. Medianos en cost.
-            │    (20%)     │
-            ├──────────────┤
-            │   Unit       │   <- la mayoría. Rápidos, deterministas.
-            │   (75%)      │
-            └──────────────┘
-```
+- **Unit: 75%** — la mayoría. Rápidos, deterministas.
+- **Integration: 20%** — boundaries entre módulos.
+- **E2E: 5%** — caros, lentos, frágiles. Solo flujos críticos.
 
 ## Coverage targets
 
@@ -44,26 +36,10 @@ Skill para definir y enforcer la estrategia de testing de un proyecto. La filoso
 ### Backend (Go)
 
 **Unit tests (`*_test.go` junto al archivo testeado)**:
-- Funciones puras del dominio: tests directos con table-driven
+- Table-driven tests como default (regla de CLAUDE.md)
+- Funciones puras del dominio: tests directos
 - Services: mocks de repos vía interface
 - Handlers: `httptest.NewRecorder` + `httptest.NewRequest`
-
-```go
-func TestComputeScore(t *testing.T) {
-    cases := []struct {
-        name    string
-        input   *Productor
-        want    float64
-        wantErr error
-    }{
-        {name: "happy path", input: validProductor(), want: 0.75},
-        {name: "missing data", input: incompleteProductor(), wantErr: ErrIncompleteData},
-    }
-    for _, tc := range cases {
-        t.Run(tc.name, func(t *testing.T) { /* ... */ })
-    }
-}
-```
 
 **Integration tests (en `tests/integration/`)**:
 - Postgres real (testcontainers o DB local de test)
@@ -71,11 +47,9 @@ func TestComputeScore(t *testing.T) {
 - Tests del flujo completo handler → service → repo → DB
 - Setup y teardown limpio entre tests
 
-### Regla dura desde Sesión 6: testcontainers obligatorios para proyectos con DB
+### Regla dura: testcontainers obligatorios para proyectos con DB
 
-Para cualquier proyecto que use Postgres/MySQL/MariaDB, los integration tests con **testcontainers** son **obligatorios antes de cerrar Gate 5**.
-
-**Por qué**: en splitwise-mini, la query real de balances (con JOINs y posibles N+1) nunca se probó hasta Gate 5 iter-2. Tests con mocks validan que el código hace lo que el dev cree — NO que la DB devuelve lo que se espera. Las queries complejas necesitan ejecutarse contra Postgres real, no mock.
+Para cualquier proyecto que use Postgres/MySQL/MariaDB, los integration tests con **testcontainers** son **obligatorios antes de cerrar Gate 5**. Tests con mocks validan que el código hace lo que el dev cree — NO que la DB devuelve lo que se espera. Las queries complejas necesitan ejecutarse contra la DB real.
 
 **Verificación en Gate 5**:
 - [ ] `tests/integration/` existe y tiene tests con testcontainers
@@ -92,37 +66,17 @@ Sin esto, Gate 5 no cierra para proyectos con DB. Es regla dura.
 
 ### Frontend (React)
 
-**Unit tests (Vitest + RTL)**:
-- Hooks personalizados
-- Lib functions y utils
-- Componentes en isolation (Storybook + tests interaction)
+**Unit tests (Vitest + RTL)**: hooks personalizados, lib functions y utils, componentes en isolation (Storybook + tests interaction).
 
-```typescript
-test('useScoreBadge formats score correctly', () => {
-  const { result } = renderHook(() => useScoreBadge(0.85))
-  expect(result.current.label).toBe('High')
-  expect(result.current.color).toBe('green')
-})
-```
+**Integration tests**: componentes con sus hooks reales contra MSW; form flows: render → fill → submit → verify.
 
-**Integration tests**:
-- Componentes con sus hooks reales contra MSW (mock service worker)
-- Form flows: render → fill → submit → verify
-
-**E2E (Playwright)**:
-- Login flow
-- Critical user journey (1-2 max para MVP)
-- Run on CI contra staging deploy
+**E2E (Playwright)**: login flow + critical user journey (1-2 max para MVP), corridos en CI contra staging deploy.
 
 ### Mobile (React Native)
 
-**Unit + integration (Jest + RNTL)**:
-- Igual que frontend pero con RNTL en lugar de RTL
-- Mock de native modules cuando aplica
+**Unit + integration (Jest + RNTL)**: igual que frontend pero con RNTL; mock de native modules cuando aplica.
 
-**E2E (Detox o Maestro)**:
-- Critical journey en iOS y Android
-- Lento, correr solo en CI o pre-release
+**E2E (Detox o Maestro)**: critical journey en iOS y Android. Lento, correr solo en CI o pre-release.
 
 ## CI gates
 
@@ -141,19 +95,13 @@ on_pr:
 
 ## Anti-patterns a rechazar
 
-1. **Mockear lo que estás testeando**: si testeás `UserService.create()` mockeando `userRepo.save()`, no estás testeando `create`, estás testeando que llamás a `save`. Use integration tests.
-
-2. **Tests que dependen de orden**: cada test debe ser independiente. Si dependen, hay estado compartido = bug futuro.
-
-3. **Tests con sleeps fijos**: `time.Sleep(2s)` no es esperar, es rezar. Usar polling con timeout o waits explícitos.
-
-4. **Snapshot testing sin revisión**: snapshots auto-aprobados son tests que no testean nada.
-
-5. **Tests de implementación, no de comportamiento**: testear "el componente llama a tal función" en lugar de "el componente muestra X cuando hago Y" es fragilidad.
-
-6. **Coverage como métrica única**: 100% coverage con tests débiles es peor que 70% con tests fuertes.
-
-7. **Skipear tests "por ahora"**: si está skipeado, eliminar el test o arreglarlo. `xtest`/`skip` permanente es deuda.
+1. **Mockear lo que estás testeando**: mockear `userRepo.save()` para testear `UserService.create()` solo testea que llamás a `save`. Usar integration tests.
+2. **Tests que dependen de orden**: estado compartido = bug futuro.
+3. **Tests con sleeps fijos**: usar polling con timeout o waits explícitos.
+4. **Snapshot testing sin revisión**: snapshots auto-aprobados no testean nada.
+5. **Tests de implementación, no de comportamiento**: fragilidad.
+6. **Coverage como métrica única**: 100% con tests débiles es peor que 70% con tests fuertes.
+7. **Skipear tests "por ahora"**: `skip` permanente es deuda. Eliminar o arreglar.
 
 ## Output esperado
 

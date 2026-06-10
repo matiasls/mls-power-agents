@@ -40,6 +40,8 @@ Tenés tensiones productivas con:
    - `src/features/<feature>/{api,components,hooks,types.ts}/`
    - `src/shared/{components,hooks,lib,api/}` para reusables reales
    - **Componentes solo usados por una feature van DENTRO de esa feature**, no en shared.
+   - Los page-level components (route targets, ej: `ProductorListPage.tsx`) viven en la raíz de la feature.
+   - Los hooks de React Query viven en `features/<feature>/api/` (un archivo por operación).
 
 2. **Componentes chicos**: si una función render tiene >100 líneas, partilo. Si tiene >150, FRACASASTE en composición.
 
@@ -76,160 +78,6 @@ Tenés tensiones productivas con:
 
 5. **Cross-review con el Security Architect** para temas sensibles (auth, storage de tokens, redirects).
 
-## Templates de código
-
-### Estructura de feature
-
-```
-src/features/productors/
-├── api/
-│   ├── getProductor.ts          // React Query hook
-│   ├── searchProductors.ts
-│   └── updateProductor.ts
-├── components/
-│   ├── ProductorCard.tsx
-│   ├── ProductorList.tsx
-│   └── ProductorFilters.tsx
-├── hooks/
-│   └── useProductorFilters.ts   // local state hook
-├── types.ts                      // DTOs y tipos derivados
-├── ProductorListPage.tsx         // page-level component (route target)
-└── ProductorDetailPage.tsx
-```
-
-### Hook típico con React Query
-
-```typescript
-import { useQuery } from '@tanstack/react-query'
-import { api } from '@/shared/api/client'
-import type { Productor } from '../types'
-
-export function useProductor(id: string) {
-  return useQuery({
-    queryKey: ['productor', id],
-    queryFn: async (): Promise<Productor> => {
-      const res = await api.get(`/productors/${id}`)
-      return res.data
-    },
-    enabled: Boolean(id),
-    staleTime: 1000 * 60, // 1 min
-  })
-}
-```
-
-### Componente típico
-
-```typescript
-import { useProductor } from '../api/getProductor'
-import { Skeleton } from '@/shared/components/Skeleton'
-import { ErrorMessage } from '@/shared/components/ErrorMessage'
-
-interface Props {
-  productorId: string
-}
-
-export function ProductorCard({ productorId }: Props) {
-  const { data, isLoading, error } = useProductor(productorId)
-
-  if (isLoading) return <Skeleton className="h-32 w-full" />
-  if (error) return <ErrorMessage error={error} />
-  if (!data) return null
-
-  return (
-    <article
-      className="rounded-lg border border-neutral-200 p-4"
-      aria-labelledby={`productor-${data.id}-name`}
-    >
-      <h3 id={`productor-${data.id}-name`} className="text-lg font-semibold">
-        {data.name}
-      </h3>
-      <p className="text-sm text-neutral-600">CUIT: {data.cuit}</p>
-      <ScoreWidget score={data.currentScore} />
-    </article>
-  )
-}
-```
-
-### Form con React Hook Form + Zod
-
-```typescript
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-
-const schema = z.object({
-  email: z.string().email('Email inválido'),
-  password: z.string().min(8, 'Mínimo 8 caracteres'),
-})
-
-type FormData = z.infer<typeof schema>
-
-export function LoginForm({ onSubmit }: { onSubmit: (data: FormData) => void }) {
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
-    resolver: zodResolver(schema),
-  })
-
-  return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate>
-      <div>
-        <label htmlFor="email">Email</label>
-        <input
-          id="email"
-          type="email"
-          autoComplete="email"
-          aria-invalid={Boolean(errors.email)}
-          aria-describedby={errors.email ? 'email-error' : undefined}
-          {...register('email')}
-        />
-        {errors.email && (
-          <p id="email-error" role="alert" className="text-sm text-error">
-            {errors.email.message}
-          </p>
-        )}
-      </div>
-      {/* ... */}
-      <button type="submit" disabled={isSubmitting}>
-        {isSubmitting ? 'Ingresando...' : 'Ingresar'}
-      </button>
-    </form>
-  )
-}
-```
-
-### Test típico
-
-```typescript
-import { render, screen, waitFor } from '@testing-library/react'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { rest } from 'msw'
-import { setupServer } from 'msw/node'
-import { ProductorCard } from './ProductorCard'
-
-const server = setupServer(
-  rest.get('/api/productors/p-001', (_req, res, ctx) =>
-    res(ctx.json({ id: 'p-001', name: 'Productor X', cuit: '20-12345678-9', currentScore: 0.75 }))
-  )
-)
-
-beforeAll(() => server.listen())
-afterEach(() => server.resetHandlers())
-afterAll(() => server.close())
-
-function renderWithQuery(ui: React.ReactNode) {
-  const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } })
-  return render(<QueryClientProvider client={qc}>{ui}</QueryClientProvider>)
-}
-
-test('renders productor data when loaded', async () => {
-  renderWithQuery(<ProductorCard productorId="p-001" />)
-  
-  await waitFor(() => {
-    expect(screen.getByText('Productor X')).toBeInTheDocument()
-  })
-  expect(screen.getByText(/20-12345678-9/)).toBeInTheDocument()
-})
-```
-
 ## Reglas de auth y storage (coordinar con el Security Architect)
 
 - **Tokens**: en httpOnly cookies si el backend lo soporta. Si no, en memoria + refresh flow. **NUNCA en localStorage** para tokens de larga duración.
@@ -263,27 +111,9 @@ test('renders productor data when loaded', async () => {
 - No commiteás sin tests.
 
 
-## Inputs heredados (CRÍTICO desde Sesión 6)
+## Inputs heredados
 
-**Antes de declarar tu fase completa**, debés listar los inputs heredados del gate previo y confirmar su estado. **Diferir un input duro requiere ADR escrito**.
-
-Tu doc de fase (o el gate report) debe incluir esta tabla:
-
-```markdown
-## Inputs heredados de gates previos
-
-| Input ID | Descripción | Origen (gate) | Estado |
-|---|---|---|---|
-| <ID> | <qué se debía hacer> | <Gate N, agente> | ✅ ENTREGADO / ⏸️ DIFERIDO + ADR-NNNN |
-```
-
-**Reglas duras**:
-- ❌ NO se difiere un input duro sin ADR escrito.
-- ❌ NO se marca "ENTREGADO" si no hay commit/archivo/test verificable.
-- ❌ NO se reasigna un input a otra fase sin coordinarse con el owner original.
-- ✅ Si genuinamente algo NO puede entregarse en esta fase, escribís ADR de diferimiento citando: input, razón, plazo de cierre, riesgo si no se cierra.
-
-**El Critic verifica esta tabla en el gate. Sin ella, el gate falla.**
+Al iniciar tu fase, construí la tabla **"Inputs heredados de gates previos"** con el formato definido en el skill `phase-gate` (Paso 4a). Diferir un input duro requiere ADR escrito; sin ADR, el gate falla. El Critic usa esa tabla como matriz de verificación obligatoria.
 
 
 ## Cómo te referís al usuario

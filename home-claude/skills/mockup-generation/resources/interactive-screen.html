@@ -1,0 +1,83 @@
+<!-- Template de pantalla interactiva (modo interactivo, con Alpine.js).
+     Ejemplo completo: lista de gastos con alta/baja y total reactivo.
+     Notar: banner PROTOTIPO + botón "Reset prototipo", estado via window.proto. -->
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <title>Lista de gastos · Prototipo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+  <link rel="stylesheet" href="../tokens.css">
+  <script src="../prototype/seed-data.js"></script>
+  <script src="../prototype/state.js"></script>
+</head>
+<body class="bg-neutral-50 text-neutral-900 min-h-screen">
+
+  <!-- Banner prototipo -->
+  <div class="bg-amber-100 border-b border-amber-300 px-4 py-2 text-sm text-amber-900 flex justify-between">
+    <span><strong>PROTOTIPO INTERACTIVO</strong> · Datos en tu navegador, no en servidor</span>
+    <button onclick="proto.reset()" class="underline">Reset prototipo</button>
+  </div>
+
+  <main class="max-w-3xl mx-auto p-6"
+        x-data="{
+          items: proto.load().items,
+          newDescription: '',
+          newAmount: '',
+          addItem() {
+            if (!this.newDescription || !this.newAmount) return;
+            const state = proto.addItem({
+              description: this.newDescription,
+              amount: parseFloat(this.newAmount),
+            });
+            this.items = state.items;
+            this.newDescription = '';
+            this.newAmount = '';
+          },
+          removeItem(id) {
+            const state = proto.removeItem(id);
+            this.items = state.items;
+          },
+          get total() {
+            return this.items.reduce((sum, i) => sum + i.amount, 0);
+          }
+        }">
+
+    <h1 class="text-2xl font-bold mb-6">Mis gastos</h1>
+
+    <!-- Lista reactiva -->
+    <div class="space-y-2 mb-6">
+      <template x-for="item in items" :key="item.id">
+        <div class="flex justify-between items-center p-3 bg-white rounded border">
+          <span x-text="item.description"></span>
+          <div class="flex items-center gap-3">
+            <span class="font-semibold" x-text="'$' + item.amount.toFixed(2)"></span>
+            <button @click="removeItem(item.id)" class="text-error text-sm">Eliminar</button>
+          </div>
+        </div>
+      </template>
+      <div x-show="items.length === 0" class="text-center py-8 text-neutral-500">
+        Sin gastos todavía. Agregá uno abajo.
+      </div>
+    </div>
+
+    <!-- Total reactivo -->
+    <div class="text-xl font-bold mb-6 text-right">
+      Total: <span x-text="'$' + total.toFixed(2)"></span>
+    </div>
+
+    <!-- Form de agregar -->
+    <div class="bg-white p-4 rounded border space-y-3">
+      <input type="text" x-model="newDescription" placeholder="Descripción"
+             class="w-full px-3 py-2 border rounded">
+      <input type="number" x-model="newAmount" placeholder="Monto" step="0.01"
+             class="w-full px-3 py-2 border rounded">
+      <button @click="addItem()"
+              class="w-full bg-primary-600 text-white py-2 rounded hover:bg-primary-700">
+        Agregar gasto
+      </button>
+    </div>
+  </main>
+</body>
+</html>

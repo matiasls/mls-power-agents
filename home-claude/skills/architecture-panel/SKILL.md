@@ -17,77 +17,41 @@ Convoca al panel de arquitectura para diseñar o revisar el sistema. Es donde el
 
 ### Paso 1: Briefing inicial
 
-Leer:
-- `00-discovery.md`
-- `01-problem.md` y `01-functional-spec.md`
-- `02-mvp-scope.md`
+Leer `00-discovery.md`, `01-problem.md`, `01-functional-spec.md` y `02-mvp-scope.md`.
 
 Producir resumen al usuario: "Voy a convocar al panel. El sistema tiene que: [3-5 bullets sintetizando]. ¿Confirmás antes de arrancar?"
 
 ### Paso 2: el Software Architect propone arquitectura inicial
 
-Invocar a `diego-architect`:
-- Lee la spec funcional y MVP scope
-- Propone una arquitectura inicial con:
-  - Módulos (aplicando skill `modular-monolith`)
-  - Stack tecnológico
-  - Decisiones grandes que requieren ADR
-  - Lista de open questions
+Invocar a `software-architect`: lee la spec funcional y MVP scope, propone arquitectura inicial con módulos (aplicando skill `modular-monolith`), stack tecnológico, decisiones grandes que requieren ADR, y lista de open questions.
 
 ### Paso 3: el Security Architect aporta perspectiva de seguridad
 
-Invocar a `ivan-security`:
-- Lee la propuesta del Software Architect
-- Aplica skill `security-checklist`
-- Aplica skill `gateway-hardening` si hay gateway
-- Lista threats prioritarios y mitigaciones
-- Identifica conflictos con la propuesta del Software Architect
+Invocar a `security-architect`: lee la propuesta del Software Architect, aplica skill `security-review` (y `gateway-hardening` si hay gateway), lista threats prioritarios y mitigaciones, e identifica conflictos con la propuesta.
 
 ### Paso 4: el API Architect aporta perspectiva de APIs
 
-Invocar a `pablo-api`:
-- Lee la propuesta del Software Architect y los hallazgos del Security Architect
-- Diseña los contratos entre módulos
-- Propone configuración de gateway
-- Identifica patterns (BFF, etc.) que justifican
+Invocar a `api-architect`: lee la propuesta y los hallazgos del Security Architect, diseña los contratos entre módulos, propone configuración de gateway, e identifica patterns (BFF, etc.) que justifican.
 
 ### Paso 5: Devil's Advocate cuestiona
 
-Invocar a `devils-advocate`:
-- Identifica la decisión central del Software Architect
-- Construye el contraargumento más fuerte
-- Plantea 2-3 escenarios donde la decisión actual falla
+Invocar a `devils-advocate`: identifica la decisión central del Software Architect, construye el contraargumento más fuerte, plantea 2-3 escenarios donde la decisión actual falla.
 
 ### Paso 6: el Cost Estimator estima costos (sanity check)
 
-Invocar a `renata-cost`:
-- Lee la propuesta consolidada
-- Estima costos one-time + recurrentes 1 año
-- Compara contra budget del usuario
-- Bandera roja si supera budget
+Invocar a `cost-estimator`: lee la propuesta consolidada, estima costos one-time + recurrentes 1 año, compara contra budget del usuario. Bandera roja si supera budget.
 
 ### Paso 7: Síntesis del Critic
 
-Invocar a `critic`:
-- Lee TODOS los outputs anteriores
-- Identifica:
-  - Áreas de consenso
-  - Conflictos reales sin resolver
-  - Decisiones que requieren input del usuario
-- Produce síntesis estructurada
+Invocar a `critic`: lee TODOS los outputs anteriores e identifica áreas de consenso, conflictos reales sin resolver y decisiones que requieren input del usuario. Produce síntesis estructurada.
 
 ### Paso 8: Presentar al usuario
-
-Mostrar al usuario:
 
 ```markdown
 # Architecture Panel — Síntesis
 
 ## Propuesta consolidada
-- Módulos: [...]
-- Stack: [...]
-- Gateway: [...]
-- Decisiones grandes: [...]
+- Módulos / Stack / Gateway / Decisiones grandes: [...]
 
 ## Acuerdos del panel
 - ...

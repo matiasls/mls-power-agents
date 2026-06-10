@@ -22,9 +22,9 @@ Para cada jurisdicción, marcar Sí/No con razón:
 | Jurisdicción | Aplica si... | Marca |
 |---|---|---|
 | **Argentina (Ley 25.326 + AAIP)** | Procesás datos de residentes AR, tenés operación AR, o procesás datos AR aunque seas extranjero | |
-| **UE (GDPR + ePrivacy)** | Procesás datos de residentes UE, ofrecés bienes/servicios a UE, o monitoreás comportamiento en UE | |
-| **California (CCPA/CPRA)** | Procesás datos de californianos + cumplís thresholds de revenue/usuarios | |
-| **Brasil (LGPD)** | Procesás datos de residentes BR, operás en BR, u ofrecés servicios a BR | |
+| **UE (GDPR + ePrivacy)** | Criterio estándar de extraterritorialidad: residentes UE, oferta de servicios o monitoreo | |
+| **California (CCPA/CPRA)** | Datos de californianos + thresholds de revenue/usuarios | |
+| **Brasil (LGPD)** | Análogo: residentes BR, operación u oferta a BR | |
 | **Otras (Chile, México, etc.)** | Análoga lógica de extraterritorialidad | |
 
 ### Paso 2: Inventario de PII (Personal Identifiable Information)
@@ -34,10 +34,7 @@ Tabla obligatoria. Para cada tipo de dato:
 | Dato | Categoría | Origen | Propósito | Base legal AR | Base legal GDPR | Retention |
 |---|---|---|---|---|---|---|
 
-**Categorías especiales** (cuidado extra):
-- Datos sensibles (Ley 25.326 art. 7 / GDPR art. 9): salud, orientación sexual, religión, opinión política, datos biométricos, datos genéticos
-- Datos de menores (consentimiento especial)
-- Datos financieros / scoring crediticio (regulación específica + sectorial)
+**Categorías especiales** (cuidado extra): datos sensibles (Ley 25.326 art. 7 / GDPR art. 9), datos de menores (consentimiento especial), datos financieros / scoring crediticio (regulación específica + sectorial).
 
 ### Paso 3: Mapeo regulatorio sectorial
 
@@ -80,20 +77,14 @@ Si alguno falla, el consentimiento NO es válido bajo GDPR ni 25.326 (actualizad
 | ID | Riesgo | Norma | Probabilidad | Impacto | Mitigación | Owner | Plazo |
 |---|---|---|---|---|---|---|---|
 
-Severidad orientativa:
-- **🔴 Crítico**: multa potencial >USD 100K o suspensión operativa
-- **🟠 Alto**: multa <USD 100K, daño reputacional serio
-- **🟡 Medio**: warning de regulador, corrección obligatoria
-- **🟢 Bajo**: best practice, no obligatorio
+Severidad orientativa: 🔴 Crítico = multa potencial >USD 100K o suspensión operativa · 🟠 Alto = multa <USD 100K, daño reputacional serio · 🟡 Medio = warning de regulador, corrección obligatoria · 🟢 Bajo = best practice, no obligatorio.
 
 ### Paso 7: Identificar acciones requeridas
 
 | Acción | Owner | Plazo objetivo | Bloqueante de qué |
 |---|---|---|---|
-| Designar DPO | Usuario | Pre-launch | Operación bajo GDPR/AR si aplica |
-| Registrar BBDD en AAIP | Usuario | Pre-launch | Operación en AR |
+| Designar DPO / Registrar BBDD en AAIP | Usuario | Pre-launch | Operación bajo GDPR/AR si aplica |
 | Redactar Privacy Policy | Estudio externo | Pre-launch | Site público |
-| Consulta legal sobre <tema> | Estudio externo | <fecha> | Fase X |
 | DSA con design partners | Estudio externo | Antes de data sharing | Operación con partners |
 | Procedimiento ARCO/GDPR | Backend | Pre-launch | Compliance operacional |
 
@@ -113,9 +104,7 @@ El valor del Legal & Compliance agent es **framing**, no respuesta final. Produc
 
 ## Preguntas concretas
 1. ¿La estructura X cumple con Y? Cita normativa específica.
-2. ¿La cláusula Z en contratos B2B con partners es exigible?
-3. ¿El procesamiento W requiere registro adicional?
-4. ¿Bajo qué umbral de N usuarios pasamos a obligación A?
+2. ¿Bajo qué umbral de N usuarios pasamos a obligación A?
 ...
 
 ## Documentos adjuntos
@@ -128,15 +117,6 @@ Una buena consulta legal con brief = 1-2 horas del estudio = $300-800 USD. Sin b
 
 ## Output esperado
 
-`docs/context/02-legal-compliance.md` con secciones:
-- Disclaimer
-- Jurisdicciones aplicables
-- PII inventory
-- Mapeo regulatorio
-- Diseño de consentimiento
-- Derechos del titular
-- Riesgos
-- Acciones requeridas con owner + plazo
-- Brief para estudio externo
+`docs/context/02-legal-compliance.md` con secciones: disclaimer, jurisdicciones aplicables, PII inventory, mapeo regulatorio, diseño de consentimiento, derechos del titular, riesgos, acciones requeridas con owner + plazo, brief para estudio externo.
 
 Status: borrador hasta validar con estudio externo. Después de consulta: actualizar con observaciones del estudio.

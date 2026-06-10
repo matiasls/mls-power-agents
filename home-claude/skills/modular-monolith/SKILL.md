@@ -17,33 +17,10 @@ Este skill encapsula los patrones de diseño de monolito modular que el Software
 
 ## Anti-patterns a evitar
 
-### ❌ División por capa técnica
-
-```
-app/
-├── controllers/
-├── services/
-├── repositories/
-└── models/
-```
-
-Esto NO es modular monolith. Es un gran monolito con folders. Cualquier cambio toca todas las capas.
-
-### ❌ Módulos con dependencias circulares
-
-```
-auth → users → notifications → auth
-```
-
-Si tu grafo de dependencias tiene ciclos, no son módulos realmente.
-
-### ❌ Módulos "manager" o "shared" gigantes
-
-Un módulo `shared/` con 50 archivos es un dump. Eso debería ser varios módulos chicos o ir adentro de los módulos que lo usan.
-
-### ❌ Módulos que comparten tablas
-
-Si dos módulos hacen SELECT/UPDATE sobre la misma tabla, NO son módulos separados. Son uno.
+- **❌ División por capa técnica** (`controllers/`, `services/`, `repositories/`, `models/`): es un gran monolito con folders, no un modular monolith. Cualquier cambio toca todas las capas.
+- **❌ Módulos con dependencias circulares** (`auth → users → notifications → auth`): si el grafo tiene ciclos, no son módulos realmente.
+- **❌ Módulos "manager" o "shared" gigantes**: un `shared/` con 50 archivos es un dump. Debería ser varios módulos chicos o ir adentro de los módulos que lo usan.
+- **❌ Módulos que comparten tablas**: si dos módulos hacen SELECT/UPDATE sobre la misma tabla, NO son módulos separados. Son uno.
 
 ## Patrón recomendado
 
@@ -59,18 +36,10 @@ app/
 │   ├── contracts/      # Tipos exportados a otros módulos
 │   └── module.go       # Punto de entrada / wire
 ├── scoring/            # Módulo: scoring engine
-│   ├── domain/
-│   ├── handlers/
-│   ├── persistence/
-│   ├── services/
-│   ├── contracts/
-│   └── module.go
+│   └── (misma estructura)
 ├── client_portal/      # Módulo: portal del cliente
-│   ├── ...
 ├── admin/              # Módulo: admin panel
-│   ├── ...
 ├── platform/           # Infra compartida (DB pool, logger, config)
-│   ├── ...
 └── cmd/
     └── api/main.go     # Wire everything together
 ```
@@ -88,10 +57,7 @@ import "app/scoring/domain"      // ❌ Cruzar boundary
 import "app/scoring/persistence" // ❌ Cruzar boundary
 ```
 
-Esto se puede enforzar con:
-- Convención de equipo + code review
-- Herramientas como `archtest` en Go o `dependency-cruiser` en Node
-- Modules de Go nativos (`internal/` directories)
+Enforcement: convención + code review, herramientas como `archtest` (Go) o `dependency-cruiser` (Node), o `internal/` directories de Go.
 
 ### Reglas para los datos
 
@@ -112,17 +78,11 @@ schema admin;         -- admin.audit_log
 
 ## Cómo identificar boundaries correctos
 
-### Heurísticas del Domain-Driven Design
+### Heurísticas para separar
 
-1. **Ubiquitous Language**: si un equipo usa la palabra "Score" pero significa algo distinto que otro equipo, son módulos distintos.
-
-2. **Bounded Contexts**: si una entidad como "Productor" tiene atributos relevantes diferentes en distintos contextos, esos son módulos distintos.
-   - En `ingestion`: Productor tiene CUIT, geo, área sembrada
-   - En `scoring`: Productor tiene score, drivers, exposición
-   - En `client_portal`: Productor es un row que ves en una tabla
-
-3. **Razones para cambiar**: si dos módulos siempre cambian juntos, probablemente son uno solo. Si nunca cambian juntos, son módulos distintos.
-
+1. **Lenguaje**: si "Score" significa algo distinto en dos contextos, son módulos distintos.
+2. **Atributos por contexto**: si una entidad como "Productor" tiene atributos relevantes diferentes en distintos contextos, esos son módulos distintos (en `ingestion` tiene CUIT/geo/área; en `scoring` tiene score/drivers; en `client_portal` es un row de una tabla).
+3. **Razones para cambiar**: si dos módulos siempre cambian juntos, probablemente son uno solo. Si nunca cambian juntos, son distintos.
 4. **Equipos**: si en el futuro vas a tener un equipo dedicado a X, X es un módulo.
 
 ### Heurísticas inversas (cuándo NO son módulos separados)
@@ -134,33 +94,9 @@ schema admin;         -- admin.audit_log
 
 ## Patrones de comunicación entre módulos
 
-### 1. Llamadas síncronas (default para MVP)
-
-Módulo A llama a `b.contracts.GetX(id)`. Está bien para MVP.
-
-### 2. Eventos / pub-sub (cuando se justifica)
-
-Módulo A emite `OrderCreated` event. Módulo B se suscribe.
-
-**Cuándo usar**:
-- Cuando hay >2 consumidores de la misma cosa.
-- Cuando el procesamiento puede ser asincrónico.
-- Cuando querés desacoplar producer y consumer en el tiempo.
-
-**Implementación en monolito**: in-memory event bus o lightweight queue como NATS, no Kafka.
-
-### 3. Outbox pattern (para garantizar consistencia)
-
-Si una operación toca DB Y emite evento, usar outbox para garantizar atomicidad.
-
-```sql
-BEGIN;
-  INSERT INTO orders (...) VALUES (...);
-  INSERT INTO outbox (event_type, payload) VALUES ('OrderCreated', ...);
-COMMIT;
-
--- Worker separado lee de outbox y publica al event bus
-```
+1. **Llamadas síncronas (default para MVP)**: módulo A llama a `b.contracts.GetX(id)`.
+2. **Eventos / pub-sub**: solo cuando hay >2 consumidores, el procesamiento puede ser asincrónico, o querés desacoplar producer y consumer en el tiempo. Implementación en monolito: in-memory event bus o lightweight queue como NATS, **no Kafka**.
+3. **Outbox pattern**: si una operación toca DB Y emite evento, usar outbox para garantizar atomicidad (insert del registro + insert en `outbox` en la misma transacción; worker separado publica al event bus).
 
 ## Cuándo SÍ extraer un módulo a microservicio
 
@@ -175,9 +111,7 @@ Lista checklist. Solo si la mayoría aplica:
 
 Si menos de 3 aplican: NO extraer. Sigue como módulo.
 
-## Ejemplos canónicos
-
-### Sistema de ingesta + procesamiento + portal (caso AgroScore)
+## Ejemplo canónico: ingesta + procesamiento + portal
 
 ```
 modules/
@@ -192,30 +126,6 @@ Comunicación:
 - `ingestion` → `scoring`: vía eventos o llamada directa (`scoring.Recompute(productorID)`)
 - `client_portal` → `scoring`: llamada síncrona (`scoring.GetScore(productorID)`)
 - `admin` → cualquier: solo lectura, con permisos elevados
-
-### E-commerce típico
-
-```
-modules/
-├── catalog/             # productos, categorías
-├── inventory/           # stock, reservations
-├── orders/              # carrito, checkout, orders
-├── payments/            # integración con gateways de pago
-├── shipping/            # quotes, tracking
-├── customer/            # cuentas, addresses, profile
-└── platform/            # auth, logging, etc.
-```
-
-### SaaS B2B con multitenancy
-
-```
-modules/
-├── tenancy/             # organizations, users, invitations
-├── billing/             # subscriptions, invoices, usage tracking
-├── <core feature 1>/    # depende del producto
-├── <core feature 2>/
-└── platform/
-```
 
 ## Output esperado del Software Architect cuando aplique este skill
 

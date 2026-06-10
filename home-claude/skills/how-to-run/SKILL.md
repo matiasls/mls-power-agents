@@ -1,72 +1,52 @@
 ---
 name: how-to-run
-description: Generate or update the docs/EXECUTION.md document with full instructions for running local, staging, and production. Use in Fase 4 (DevOps setup) or when the document drifts. Auto-invoke when user says "cómo ejecuto", "cómo se levanta el sistema", "/how-to-run", "actualizar EXECUTION".
+description: Generate or audit docs/EXECUTION.md covering how to run the system in local, staging, and production with exact commands. Use in Fase 4 (DevOps setup), at any phase gate where execution clarity matters, or when the document drifts. Auto-invoke when user says "cómo ejecuto", "cómo levanto el sistema", "cómo deployo", "EXECUTION.md", "actualizar EXECUTION", "/how-to-run".
 ---
 
-# How To Run
+# How To Run (Execution Runbook)
 
-Asegura que el proyecto tiene un `docs/EXECUTION.md` completo y actualizado.
+Garantiza que todo proyecto tiene un `docs/EXECUTION.md` que cubre local + staging + prod con comandos exactos. Es la respuesta permanente a "¿cómo ejecuto el sistema?".
+
+## Reglas duras
+
+1. **Todo proyecto DEBE tener `docs/EXECUTION.md`** desde Fase 4. Bloqueante en Gate 4.
+2. **Tres secciones OBLIGATORIAS**: Local Development, Staging, Production.
+3. **Cada sección con comandos exactos**, no descripciones vagas.
+4. **Local debe arrancar con UN comando** (ej: `make dev`).
+5. **Production debe incluir rollback explícito**.
+6. **Si una sección no aplica**, declararlo explícito: "Staging: no configurado aún. Pendiente en Fase X."
+7. **`.env.example` siempre presente**, `.env` siempre en `.gitignore`.
 
 ## Procedimiento
 
 ### Paso 1: Verificar existencia
 
-```bash
-ls docs/EXECUTION.md
-```
-
-- Si no existe: crear desde el template del skill `execution-runbook`.
-- Si existe: leer y validar completitud.
+- Si `docs/EXECUTION.md` no existe: crear desde el template de abajo.
+- Si existe: leer y validar completitud contra la auditoría del final.
 
 ### Paso 2: Recolectar info del proyecto
 
-Leer:
-- `package.json`, `go.mod`, `Cargo.toml`, etc. (qué runtime y deps)
-- `Makefile` (qué comandos hay)
-- `docker-compose.yml` (qué services)
-- `.env.example` (qué env vars necesita)
-- `docs/context/03-architecture.md` (módulos y servicios)
-- `docs/context/04-infra.md` (si existe, dónde corre staging/prod)
+Leer: `package.json` / `go.mod` (runtime y deps), `Makefile` (comandos), `docker-compose.yml` (services), `.env.example` (env vars), `docs/context/03-architecture.md` (módulos), `docs/context/04-infra.md` (dónde corre staging/prod).
 
-### Paso 3: Aplicar el skill `execution-runbook`
+### Paso 3: Generar/actualizar con el template
 
-Ejecutar el template completo del skill `execution-runbook`. El doc resultante debe tener:
-
-1. **Overview**: qué componentes corren
-2. **Local Development**: prereqs, setup, comandos
-3. **Staging**: dónde, cómo deploy, cómo acceder, cómo ver logs
-4. **Production**: dónde, cómo deploy, rollback, observabilidad
-5. **Env vars reference**: tabla con local/staging/prod
-6. **Disaster recovery**: backup policy, RTO/RPO
+Usar el template completo de abajo, adaptado al proyecto real (no dejar placeholders sin marcar como `[completar]`).
 
 ### Paso 4: Validar comandos
 
-Si es posible (en entorno seguro):
-- Probar `make dev` o el comando equivalente
-- Verificar que los URLs locales responden
-- Marcar pasos que fallan o quedan poco claros
+Si es posible (en entorno seguro): probar `make dev` o equivalente, verificar que las URLs locales responden, marcar pasos que fallan o quedan poco claros.
 
 ### Paso 5: Generar Makefile estándar si falta
-
-Si el proyecto no tiene `Makefile`, ofrecer crearlo:
 
 ```makefile
 .PHONY: setup dev test lint down clean help
 
 help:
-	@echo "Available commands:"
-	@echo "  make setup   - First-time setup"
-	@echo "  make dev     - Start all services for local development"
-	@echo "  make test    - Run all tests"
-	@echo "  make lint    - Run linters"
-	@echo "  make down    - Stop all services"
-	@echo "  make clean   - Stop and remove volumes (destructive)"
+	@echo "make setup | dev | test | lint | down | clean"
 
 setup: ## First-time setup
 	cp -n .env.example .env || true
-	docker compose pull
-	docker compose build
-	@echo "Setup complete. Run 'make dev' to start."
+	docker compose pull && docker compose build
 
 dev: ## Start local environment
 	docker compose up
@@ -82,49 +62,182 @@ lint: ## Run linters
 down: ## Stop all services
 	docker compose down
 
-clean: ## Stop and remove volumes
+clean: ## Stop and remove volumes (destructive)
 	docker compose down -v
 ```
 
 ### Paso 6: Generar `.env.example` si falta
 
-Si no existe, generar uno basándose en uso de envs en código:
-
-```bash
-# Backend
-DATABASE_URL=postgres://user:pass@localhost:5432/dbname
-JWT_SECRET=replace-with-random-256-bit
-API_PORT=8080
-
-# Frontend
-VITE_API_URL=http://localhost:8080
-
-# External services
-NOSIS_API_KEY=
-SENTRY_DSN=
-```
+Basarse en el uso de env vars en el código. Toda variable usada en código debe estar en `.env.example` con valor de ejemplo o vacío.
 
 ### Paso 7: Output al usuario
 
+Reportar por sección: ✅ completa / ⚠️ incompleta (qué falta) / declarada como "no aplica". Listar lo que falta del usuario (provider de prod, URLs, runbooks pendientes).
+
+## Template de `docs/EXECUTION.md`
+
 ```markdown
-# EXECUTION.md actualizado
+# Execution Guide
 
-## Cambios
-- ✅ Sección Local Development: completa
-- ⚠️ Sección Staging: no aplica todavía (declarado)
-- ⚠️ Sección Production: incompleta — falta info de provider y URL de prod
-- ✅ Makefile creado
+> Cómo ejecutar este sistema en cada entorno.
+> Si encontrás un comando que no funciona o un paso que falta, agregarlo acá.
 
-## Lo que falta del usuario
-- [ ] Definir provider de prod (Railway/AWS/GCP)
-- [ ] Configurar URL de prod
-- [ ] Crear runbook de rollback en `docs/runbooks/rollback.md`
+## Overview
+
+Components:
+- Frontend web (React) → puerto 3000
+- Backend API (Go) → puerto 8080
+- PostgreSQL → puerto 5432
+- Gateway (Caddy) → puerto 443 / 80
+
+---
+
+## Local Development
+
+### Prerequisites
+
+- Docker Desktop (o compatible), Make
+- Go / Node según stack (para trabajar fuera de Docker)
+
+### First-time setup
+
+\`\`\`bash
+git clone <repo-url> && cd <project>
+cp .env.example .env   # editar valores locales
+make setup
+\`\`\`
+
+### Daily development
+
+| Command | What it does |
+|---|---|
+| `make dev` | Start all services |
+| `make test` | Run all tests |
+| `make lint` | Run linters |
+| `make migrate-up` / `migrate-down` | Apply / rollback DB migrations |
+| `make seed` | Load seed data |
+| `make logs` | Tail logs |
+| `make psql` | psql session against local DB |
+| `make down` / `make clean` | Stop / stop+remove volumes |
+
+### Service URLs (local)
+
+| Service | URL |
+|---|---|
+| Frontend | http://localhost:3000 |
+| API | http://localhost:8080 |
+| Gateway | http://localhost:8443 |
+
+### Troubleshooting
+
+- **Port in use**: `lsof -i :8080` → `kill <pid>`
+- **DB connection refused tras restart**: `make clean && make setup`
+- **Frontend no llega a la API**: revisar `VITE_API_URL` en `.env`
+
+---
+
+## Staging Environment
+
+- **Provider**: [Railway / completar] — **URL**: https://staging.[dominio]
+- **DB**: no expuesta públicamente, acceso vía `railway run psql`
+
+### Deploy
+
+Automático: cada merge a `develop` deploya vía integración GitHub.
+Manual: `railway up --environment staging`
+
+### Logs y DB
+
+\`\`\`bash
+railway logs --environment staging --service api
+railway run psql --environment staging
+\`\`\`
+
+### Smoke tests post-deploy
+
+\`\`\`bash
+curl https://api-staging.[dominio]/health
+curl https://api-staging.[dominio]/api/v1/version
+\`\`\`
+
+---
+
+## Production Environment
+
+- **Provider**: [completar] — **URL**: https://[dominio] — **DNS**: [completar]
+- **DB**: NO accesible públicamente. Solo vía bastion / shell del provider con MFA.
+- **Admin panel**: con SSO + IP allowlist.
+
+### Pre-deploy checklist
+
+- [ ] Tests verdes en CI
+- [ ] CHANGELOG.md actualizado con versión
+- [ ] Tag creado: `git tag vX.Y.Z`
+- [ ] DB migrations revisadas (¿zero downtime?)
+- [ ] Plan de rollback claro
+
+### Deploy
+
+\`\`\`bash
+git checkout main && git pull
+git tag vX.Y.Z -m "Release vX.Y.Z" && git push origin vX.Y.Z
+railway up --environment production   # o equivalente según provider
+\`\`\`
+
+### Verify post-deploy
+
+\`\`\`bash
+curl https://api.[dominio]/health
+curl https://api.[dominio]/api/v1/version   # debe devolver vX.Y.Z
+# + smoke test del flujo crítico
+\`\`\`
+
+### Rollback
+
+\`\`\`bash
+railway redeploy <previous-deploy-id> --environment production
+\`\`\`
+
+Si requiere DB rollback: ver `docs/runbooks/db-rollback.md`.
+
+### Logs y operaciones
+
+| Tipo | Dónde |
+|---|---|
+| Application / access logs | dashboard del provider |
+| Error tracking | Sentry: <URL> |
+| Metrics | <URL> |
+
+Operaciones comunes (restart, hotfix, scale, rotación de secretos, backup/restore): ver `docs/runbooks/`.
+
+---
+
+## Environment Variables Reference
+
+| Variable | Local | Staging | Production | Notas |
+|---|---|---|---|---|
+| `DATABASE_URL` | local docker | provider | provider | Nunca commitear |
+| `JWT_SECRET` | dev value | secrets | secrets | Rotar cada 90 días |
+
+---
+
+## Disaster Recovery
+
+- **Backup policy**: DB con PITR, retención [X] días. Config en Git + secrets en provider.
+- **RTO / RPO objetivos**: [completar]
+- **Total loss**: ver `docs/runbooks/disaster-recovery.md`.
 ```
 
-## Reglas duras
+## Procedimiento de auditoría (Gate 4 / Gate 6)
 
-- **`docs/EXECUTION.md` con secciones Local + Staging + Prod desde Fase 4**.
-- **Si una sección no aplica, declararlo explícito**: "Staging: no configurado aún. Pendiente en Fase X."
-- **Local debe arrancar con 1 comando**.
-- **Production debe incluir rollback** explícito.
-- **`.env.example` siempre presente**, `.env` siempre en `.gitignore`.
+1. **¿Existe `docs/EXECUTION.md`?** Si no → bloqueante.
+2. **¿Tiene las 3 secciones?** Falta una sin declaración explícita de "no aplica" → bloqueante.
+3. **¿El comando de start local funciona?** Ejecutar si es posible, o pedir confirmación al usuario.
+4. **¿`.env.example` sincronizado con el código?** Detectar envs usadas en código que falten.
+5. **¿Hay rollback en Production?** Si no → bloqueante en Gate 4.
+
+## Mantenimiento
+
+- El Doc Sentinel verifica este archivo en cada gate.
+- Cualquier cambio en cómo se ejecuta el sistema actualiza este archivo en el mismo PR.
+- **Si un dev nuevo no puede arrancar el sistema siguiendo este doc, el doc es un bug.**

@@ -1,0 +1,46 @@
+<!-- Template del índice navegable (mocks/index.html).
+     Reemplazar <Project>, <fecha> y la lista de pantallas/estados/componentes reales. -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Mockups · <Project></title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-neutral-50 p-8">
+  <div class="max-w-4xl mx-auto">
+    <h1 class="text-3xl font-bold mb-2">Mockups: <Project></h1>
+    <p class="text-neutral-600 mb-8">
+      Generado por el UI Designer · Fase 3A · <fecha>
+    </p>
+
+    <section class="mb-12">
+      <h2 class="text-xl font-semibold mb-4">Pantallas principales (happy path)</h2>
+      <ul class="space-y-2">
+        <li><a href="screens/login.html" class="text-primary-600 underline">Login</a> — punto de entrada</li>
+        <li><a href="screens/dashboard.html" class="text-primary-600 underline">Dashboard</a> — vista principal post-login</li>
+        <li><a href="screens/productor-detail.html" class="text-primary-600 underline">Productor detail</a> — ficha con score</li>
+        <!-- ... -->
+      </ul>
+    </section>
+
+    <section class="mb-12">
+      <h2 class="text-xl font-semibold mb-4">Estados</h2>
+      <ul class="space-y-2">
+        <li><a href="screens/states/dashboard-empty.html">Dashboard sin datos</a></li>
+        <li><a href="screens/states/dashboard-loading.html">Dashboard cargando</a></li>
+        <li><a href="screens/states/dashboard-error.html">Dashboard con error</a></li>
+      </ul>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-semibold mb-4">Componentes reutilizables</h2>
+      <p class="text-sm text-neutral-600 mb-2">Para referencia del Frontend Developer al implementar:</p>
+      <ul class="space-y-2">
+        <li><a href="components/button.html">Button (todas las variantes)</a></li>
+        <li><a href="components/card.html">Card</a></li>
+      </ul>
+    </section>
+  </div>
+</body>
+</html>

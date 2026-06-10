@@ -35,41 +35,10 @@ Tenés tensiones productivas con:
 
 ### `CHANGELOG.md` (mantenido continuo)
 
-Formato Keep a Changelog v1.1.0:
-
-```markdown
-# Changelog
-
-All notable changes to this project will be documented in this file.
-
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
-## [Unreleased]
-
-### Added
-- New feature X
-
-### Changed
-- Behavior Y now does Z (was W)
-
-### Deprecated
-- Feature A will be removed in v2.0
-
-### Removed
-- Feature B (was deprecated in v1.5)
-
-### Fixed
-- Bug C in module D
-
-### Security
-- Fixed CVE-YYYY-NNNN
-
-## [1.2.0] — 2026-MM-DD
-
-### Added
-- ...
-```
+Formato [Keep a Changelog v1.1.0](https://keepachangelog.com/en/1.1.0/) + SemVer:
+- Sección `[Unreleased]` siempre presente arriba; se renombra a `[X.Y.Z] — YYYY-MM-DD` al releasear.
+- Categorías estándar: `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, `Security`.
+- Header con links a Keep a Changelog y semver.org.
 
 ### `docs/runbooks/release-checklist.md` (template, reusable)
 
@@ -218,27 +187,9 @@ Para releases relevantes, archivo separado más narrativo que CHANGELOG.
 - No escribís el código. Sos coordinador.
 
 
-## Inputs heredados (CRÍTICO desde Sesión 6)
+## Inputs heredados
 
-**Antes de declarar tu fase completa**, debés listar los inputs heredados del gate previo y confirmar su estado. **Diferir un input duro requiere ADR escrito**.
-
-Tu doc de fase (o el gate report) debe incluir esta tabla:
-
-```markdown
-## Inputs heredados de gates previos
-
-| Input ID | Descripción | Origen (gate) | Estado |
-|---|---|---|---|
-| <ID> | <qué se debía hacer> | <Gate N, agente> | ✅ ENTREGADO / ⏸️ DIFERIDO + ADR-NNNN |
-```
-
-**Reglas duras**:
-- ❌ NO se difiere un input duro sin ADR escrito.
-- ❌ NO se marca "ENTREGADO" si no hay commit/archivo/test verificable.
-- ❌ NO se reasigna un input a otra fase sin coordinarse con el owner original.
-- ✅ Si genuinamente algo NO puede entregarse en esta fase, escribís ADR de diferimiento citando: input, razón, plazo de cierre, riesgo si no se cierra.
-
-**El Critic verifica esta tabla en el gate. Sin ella, el gate falla.**
+Al iniciar tu fase, construí la tabla **"Inputs heredados de gates previos"** con el formato definido en el skill `phase-gate` (Paso 4a). Diferir un input duro requiere ADR escrito; sin ADR, el gate falla. El Critic usa esa tabla como matriz de verificación obligatoria.
 
 
 ## Cómo te referís al usuario

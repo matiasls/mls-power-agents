@@ -1,0 +1,58 @@
+<!-- Template base por pantalla (modo estático).
+     Cada screens/*.html sigue este esqueleto. Reemplazar <Nombre pantalla> y <Project>. -->
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><Nombre pantalla> · <Project></title>
+
+  <!-- Tailwind via CDN: sin build step -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Tokens del design system -->
+  <link rel="stylesheet" href="../tokens.css">
+
+  <!-- Configuración de Tailwind para que use los tokens -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: 'var(--primary-50)',
+              /* ... */
+              600: 'var(--primary-600)',
+              700: 'var(--primary-700)',
+            },
+            neutral: { /* ... */ },
+            success: 'var(--success)',
+            error: 'var(--error)',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body { font-family: var(--font-sans); }
+  </style>
+</head>
+<body class="bg-neutral-50 text-neutral-900 min-h-screen">
+
+  <!-- Banner identificando que es mockup, NO producción -->
+  <div class="bg-amber-100 border-b border-amber-300 px-4 py-2 text-sm text-amber-900">
+    <strong>MOCKUP</strong> · Pantalla: <code><Nombre pantalla></code> ·
+    <a href="../index.html" class="underline">Volver al índice</a>
+  </div>
+
+  <!-- Contenido real de la pantalla acá -->
+  <main class="max-w-5xl mx-auto p-6">
+    <!-- ... -->
+  </main>
+
+</body>
+</html>

@@ -5,17 +5,11 @@ description: Execute a structured release checklist before deploying to producti
 
 # Release Checklist
 
-Procedimiento canónico de release que el Release Manager aplica. La filosofía: el release ideal es aburrido y reversible.
+Procedimiento canónico de release que el Release Manager aplica. La filosofía: el release ideal es aburrido y reversible. Se invoca cuando el equipo decide hacer un release a producción; NO debe ejecutarse "para probar".
 
-## Trigger del skill
+## Pre-requisito: Smoke test manual del founder
 
-Cuando el equipo decide hacer un release a producción, el Release Manager invoca este skill. NO debe ejecutarse "para probar".
-
-## Pre-requisito desde Sesión 6: Smoke test manual del founder
-
-**Antes de iniciar la Fase 1 de este checklist**, debe existir `docs/runbooks/smoke-test.md` con checklist firmable por el founder. Sin este checklist firmado, **Gate 6 no abre**.
-
-Por qué: tests automáticos validan que el código hace lo que el dev cree. Smoke test manual valida que **el sistema funciona** desde la perspectiva del usuario real — irremplazable.
+**Antes de iniciar la Fase 1 de este checklist**, debe existir `docs/runbooks/smoke-test.md` con checklist firmable por el founder. Sin este checklist firmado, **Gate 6 no abre**. Tests automáticos validan que el código hace lo que el dev cree; el smoke test manual valida que el sistema funciona desde la perspectiva del usuario real.
 
 ### Estructura del `docs/runbooks/smoke-test.md`
 
@@ -30,21 +24,15 @@ Por qué: tests automáticos validan que el código hace lo que el dev cree. Smo
 
 Para cada UC crítico del MVP, ejecutar manualmente y firmar:
 
-- [ ] UC-001: <descripción del flujo>
-  - [ ] Setup: <pasos previos>
-  - [ ] Ejecución: <pasos>
-  - [ ] Resultado esperado: <output>
-  - [ ] Resultado real: <pegar evidencia>
+- [ ] UC-NNN: <descripción del flujo>
+  - [ ] Setup / Ejecución: <pasos>
+  - [ ] Resultado esperado vs real: <pegar evidencia>
   - **Firmado**: __________
 
-- [ ] UC-002: ...
-
 ## Issues encontrados
-
 [Si hay diferencias entre esperado y real]
 
 ## Veredicto final
-
 - [ ] APROBADO para release
 - [ ] BLOQUEAR release (motivos: ____)
 
@@ -96,8 +84,7 @@ Para cada UC crítico del MVP, ejecutar manualmente y firmar:
 
 #### Communication
 - [ ] On-call notificado y disponible
-- [ ] Customer-facing release notes drafted (si user-facing)
-- [ ] Internal release notes drafted (Slack/email)
+- [ ] Release notes drafted (customer-facing si aplica + internas)
 - [ ] Horario: NO viernes tarde, NO víspera de feriado, NO durante peak traffic conocido
 
 ### Fase 2: Rollback plan (filled BEFORE deploy)
@@ -139,20 +126,16 @@ Rollback automático si dentro de 30 min del deploy:
 
 ### Fase 4: Post-deploy verification (primeros 30 min)
 
-- [ ] Health endpoint OK
-- [ ] Version endpoint devuelve `vX.Y.Z`
+- [ ] Health endpoint OK y version endpoint devuelve `vX.Y.Z`
 - [ ] Smoke test de flujo crítico ejecutado y pasó
 - [ ] Logs muestran no error spike
-- [ ] Métricas: error rate dentro de baseline ±10%
-- [ ] Métricas: p99 dentro de baseline ±20%
+- [ ] Métricas: error rate dentro de baseline ±10%; p99 dentro de baseline ±20%
 - [ ] Sentry / error tracker: no new error patterns
-- [ ] DB connection pool no saturado
-- [ ] Memory / CPU no anómalos
+- [ ] DB connection pool no saturado; memory / CPU no anómalos
 
 ### Fase 5: Cierre del release
 
-- [ ] Release notes publicadas (si applica)
-- [ ] Stakeholders notificados
+- [ ] Release notes publicadas (si aplica) y stakeholders notificados
 - [ ] Issue tracker actualizado: features marked as released
 - [ ] CHANGELOG.md committed con la versión publicada
 - [ ] Próximo `[Unreleased]` section iniciada
@@ -174,19 +157,9 @@ Rollback automático si dentro de 30 min del deploy:
 
 ## Para HOTFIX urgente
 
-Algunos checks pueden saltarse, otros no:
+**Sí se pueden saltar (documentando deuda)**: CHANGELOG en el mismo PR (puede esperar 24hs), smoke tests de staging completos (puede ser parcial), release notes públicas.
 
-**Sí se pueden saltar (documentando deuda)**:
-- CHANGELOG actualizado en mismo PR (puede esperar 24hs)
-- Smoke tests de staging completos (puede ser parcial)
-- Release notes públicas
-
-**No se pueden saltar**:
-- Tests del cambio específico
-- Rollback plan
-- Security review del cambio
-- On-call notificado
-- Backup verificado
+**No se pueden saltar**: tests del cambio específico, rollback plan, security review del cambio, on-call notificado, backup verificado.
 
 Después de un hotfix, post-mortem obligatorio en 7 días.
 

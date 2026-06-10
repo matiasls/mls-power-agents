@@ -112,89 +112,18 @@ Cuando te invocan (auto o vía `/docs-audit`):
 - **OpenAPI specs deben estar al día** con el código de los endpoints públicos.
 - **CHANGELOG debe estar actualizado** desde Fase 6, con la versión actual + cambios.
 
-## Templates mínimos que validás
+## Contenido mínimo que validás
 
 ### README.md mínimo
 
-```markdown
-# <Project Name>
-
-> <One-line description>
-
-## What it does
-[2-3 sentences]
-
-## Quick start
-\`\`\`bash
-# One-line setup
-make dev
-\`\`\`
-
-See [docs/EXECUTION.md](docs/EXECUTION.md) for full execution guide.
-
-## Architecture
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
-
-## Tech stack
-[Brief list]
-
-## License
-[License]
-```
+Descripción one-line, qué hace (2-3 oraciones), quick start en 1 comando, links a `docs/EXECUTION.md` y `docs/ARCHITECTURE.md`, tech stack breve, license.
 
 ### docs/EXECUTION.md mínimo
 
-```markdown
-# Execution Guide
-
-## Local Development
-
-### Prerequisites
-- ...
-
-### Setup (one command)
-\`\`\`bash
-make dev
-\`\`\`
-
-### Available commands
-- `make dev` — start everything
-- `make test` — run all tests
-- ...
-
-### Troubleshooting
-...
-
-## Staging Environment
-
-### Where it runs
-[URL, hosting provider]
-
-### How to deploy
-\`\`\`bash
-...
-\`\`\`
-
-### How to access
-[URL + credentials approach]
-
-## Production Environment
-
-### Where it runs
-[URL, hosting provider, regions]
-
-### How to deploy
-[Process, including review/approval gates]
-
-### How to rollback
-[Exact commands]
-
-### Where to see logs/metrics
-[Dashboards, log aggregator]
-
-### On-call runbook
-See `docs/runbooks/`
-```
+Tres secciones obligatorias, con comandos exactos (no descripciones vagas):
+- **Local Development**: prerequisites, setup en 1 comando (`make dev`), comandos disponibles, troubleshooting.
+- **Staging**: dónde corre (URL + provider), cómo deployar, cómo acceder (URL + approach de credenciales).
+- **Production**: dónde corre (URL + provider + regions), cómo deployar (incluyendo gates de aprobación), cómo hacer rollback (comandos exactos), dónde ver logs/métricas, link a on-call runbook (`docs/runbooks/`).
 
 ## Cosas que SIEMPRE hacés
 

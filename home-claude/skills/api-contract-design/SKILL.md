@@ -24,11 +24,9 @@ Cada API surface tiene un OpenAPI spec independiente en `docs/api/<surface>.open
 
 #### Versionado
 
-- Versión en path: `/api/v1/`, `/api/v2/`
-- NO versionado por header (más difícil de debugear)
-- Backward-compatible additions NO incrementan versión
-- Breaking changes incrementan major (v1 → v2)
-- Deprecation: header `Sunset: <date>` + warning en docs + 90 días mínimo
+- Versión en path: `/api/v1/`, `/api/v2/`. NO versionado por header (más difícil de debugear).
+- Backward-compatible additions NO incrementan versión; breaking changes incrementan major (v1 → v2).
+- Deprecation: header `Sunset: <date>` + warning en docs + 90 días mínimo.
 
 #### Resource naming
 
@@ -38,30 +36,11 @@ Cada API surface tiene un OpenAPI spec independiente en `docs/api/<surface>.open
 
 #### Métodos y status codes
 
-| Método | Uso | Status codes típicos |
-|---|---|---|
-| GET | Read | 200 OK, 404 Not Found |
-| POST | Create | 201 Created (con Location header), 400 Bad Request, 409 Conflict |
-| PUT | Replace | 200 OK / 204 No Content |
-| PATCH | Partial update | 200 OK / 204 No Content |
-| DELETE | Delete | 204 No Content, 404 Not Found |
-| Cualquiera | Auth fail | 401 Unauthorized, 403 Forbidden |
-| Cualquiera | Server error | 500 Internal Server Error |
-| Cualquiera | Rate limit | 429 Too Many Requests |
+Semántica HTTP estándar. Regla house: **cada response 4xx/5xx que el endpoint puede devolver debe estar declarada en el spec** (incluyendo 429), y POST de creación devuelve 201 con `Location` header.
 
 #### Error format: RFC 7807 Problem Details
 
-```json
-{
-  "type": "https://example.com/errors/insufficient-funds",
-  "title": "Insufficient Funds",
-  "status": 422,
-  "detail": "Account balance is below the required amount.",
-  "instance": "/accounts/12345"
-}
-```
-
-Siempre con `Content-Type: application/problem+json`.
+Decisión house: TODOS los errores, en todos los endpoints, usan Problem Details (`type`, `title`, `status`, `detail`, `instance`) con `Content-Type: application/problem+json`. Sin formatos ad-hoc por endpoint.
 
 #### Pagination: cursor-based (no offset)
 
@@ -78,7 +57,7 @@ Response:
 }
 ```
 
-**Por qué cursor y no offset**: cursors son estables ante inserts/deletes. Offset pagination con datasets que cambian = duplicados o gaps.
+Decisión house: cursor, no offset — offset con datasets que cambian produce duplicados o gaps.
 
 #### Idempotency keys
 
@@ -100,31 +79,19 @@ X-RateLimit-Remaining: 42
 X-RateLimit-Reset: 1715587200
 ```
 
-Y en 429:
-```
-Retry-After: 30
-```
+Y en 429: `Retry-After: 30`.
 
 ### Paso 3: BFF (Backend For Frontend) decision
 
-Decidir si necesitás BFF entre clientes y backend:
+**Usar BFF cuando**: múltiples clientes (web + mobile) con necesidades distintas, agregación de datos de varios servicios, o el dominio interno cambia más rápido que los clientes.
 
-**Usar BFF cuando**:
-- Múltiples clientes (web + mobile) con necesidades distintas
-- Los clientes necesitan agregar datos de múltiples servicios
-- El dominio interno cambia más rápido que los clientes
-- Querés desacoplar las APIs públicas de las internas
-
-**NO usar BFF cuando**:
-- Solo un cliente
-- Backend ya hace agregaciones internamente
-- BFF agrega complejidad sin valor
+**NO usar BFF cuando**: solo hay un cliente, el backend ya agrega internamente, o el BFF solo suma indirection.
 
 Si usás BFF: documentar qué BFF habla con qué backend.
 
 ### Paso 4: Documentar el contrato (OpenAPI)
 
-Template mínimo:
+Template mínimo house (rate limit headers y schema `Problem` son obligatorios en cada surface):
 
 ```yaml
 openapi: 3.1.0
@@ -134,8 +101,6 @@ info:
   description: |
     Public API for the scoring service.
     See docs/context/03-api-design.md for design decisions.
-  contact:
-    name: API team
 
 servers:
   - url: https://api.example.com/v1
@@ -163,11 +128,9 @@ paths:
           description: Score retrieved
           headers:
             X-RateLimit-Limit:
-              schema:
-                type: integer
+              schema: { type: integer }
             X-RateLimit-Remaining:
-              schema:
-                type: integer
+              schema: { type: integer }
           content:
             application/json:
               schema:
@@ -178,16 +141,7 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
-        '429':
-          description: Rate limit exceeded
-          headers:
-            Retry-After:
-              schema:
-                type: integer
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
+        # '429' con Retry-After header y body Problem: obligatorio en cada endpoint
 
 components:
   securitySchemes:
@@ -201,42 +155,19 @@ components:
       type: object
       required: [productor_id, value, computed_at]
       properties:
-        productor_id:
-          type: string
-        value:
-          type: number
-          minimum: 0
-          maximum: 1
-        confidence_band:
-          type: object
-          properties:
-            lower:
-              type: number
-            upper:
-              type: number
-        drivers:
-          type: array
-          items:
-            $ref: '#/components/schemas/Driver'
-        computed_at:
-          type: string
-          format: date-time
+        productor_id: { type: string }
+        value: { type: number, minimum: 0, maximum: 1 }
+        computed_at: { type: string, format: date-time }
 
     Problem:
       type: object
       required: [type, title, status]
       properties:
-        type:
-          type: string
-          format: uri
-        title:
-          type: string
-        status:
-          type: integer
-        detail:
-          type: string
-        instance:
-          type: string
+        type: { type: string, format: uri }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        instance: { type: string }
 ```
 
 ### Paso 5: Coordinar con el Security Architect (security)
@@ -273,7 +204,6 @@ Sin errores = OK para PR.
 - **Exponer IDs internos en URLs públicas**: usar UUIDs o slugs públicos, internalmente otros IDs.
 - **Endpoints "do-everything"**: si un endpoint hace 5 cosas distintas, hacer 5 endpoints.
 - **No documentar errores**: cada response 4xx/5xx debe estar en el spec.
-- **Polling sobre WebSocket cuando podés usar WebSocket o SSE**: hace ruido a la infra.
 
 ## Checklist final
 

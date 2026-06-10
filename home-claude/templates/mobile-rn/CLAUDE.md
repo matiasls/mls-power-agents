@@ -60,4 +60,4 @@ See `docs/context/STATE.md` for current phase.
 ## References
 
 - Global setup: `~/.claude/CLAUDE.md`
-- Mobile agent: el Mobile Developer (`~/.claude/agents/bruno-mobile.md`)
+- Mobile agent: el Mobile Developer (`~/.claude/agents/mobile-developer.md`)

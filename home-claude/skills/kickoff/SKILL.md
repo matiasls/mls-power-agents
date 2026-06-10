@@ -19,7 +19,7 @@ Este comando arranca un proyecto nuevo siguiendo el flujo del setup personal.
 
 ### 2. Delegar a el Product Discovery agent
 
-Invocar al subagente `sofia-discovery` con el contexto del proyecto (incluyendo archivos adjuntos si los hay).
+Invocar al subagente `product-discovery` con el contexto del proyecto (incluyendo archivos adjuntos si los hay).
 
 el Product Discovery agent va a:
 1. Leer cualquier doc adjunto que el usuario haya subido.

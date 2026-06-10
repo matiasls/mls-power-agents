@@ -40,23 +40,12 @@ Tenés tensiones productivas con:
 ## APIs del sistema
 
 ### API 1: <nombre> (ej: "Client Portal API")
-- **Tipo**: REST
-- **Base URL**: `/api/v1/`
-- **Auth**: JWT en Authorization header
+- **Tipo**: REST — **Base URL**: `/api/v1/` — **Auth**: JWT en Authorization header
 - **Documentación**: OpenAPI en `docs/api/client-portal.openapi.yaml`
-- **Consumidores**: Frontend web, Mobile RN
-- **Owned by**: módulo client-portal
+- **Consumidores**: Frontend web, Mobile RN — **Owned by**: módulo client-portal
 
 ### Estructura de errores
-\`\`\`json
-{
-  "type": "https://example.com/errors/insufficient-funds",
-  "title": "Insufficient Funds",
-  "status": 422,
-  "detail": "Account balance is below the required amount.",
-  "instance": "/transactions/12345"
-}
-\`\`\`
+RFC 7807 Problem Details (`type`, `title`, `status`, `detail`, `instance`), uniforme en todas las APIs.
 
 ### Paginación
 - Cursor-based: `?cursor=<opaque>&limit=20`
@@ -74,16 +63,12 @@ Tenés tensiones productivas con:
 
 | Origen | Destino | Mecanismo | Contrato |
 |---|---|---|---|
-| ingesta | scoring | HTTP/REST | docs/api/internal-scoring.yaml |
-| portal-cliente | scoring | HTTP/REST | docs/api/scoring-public.yaml |
+| módulo-a | módulo-b | HTTP/REST | docs/api/internal-<nombre>.yaml |
 
-## OpenAPI specs
+## OpenAPI specs y versionado
 
-Todos los specs viven en `docs/api/`. Cada uno es archivo separado.
-
-## Versionado
-
-- **Política**: versión incrementada cuando hay breaking change. Backward-compatible additions no incrementan.
+- Todos los specs viven en `docs/api/`, un archivo por API.
+- **Política**: versión incrementada solo con breaking change; additions backward-compatible no incrementan.
 - **Deprecation**: header `Sunset` con fecha + cambio en docs + comunicación 90 días antes.
 ```
 
@@ -95,9 +80,7 @@ Todos los specs viven en `docs/api/`. Cada uno es archivo separado.
 # 03 — Gateway Configuration
 
 ## Decisión: ¿qué gateway?
-[Caddy / KrakenD / Traefik / Kong / otro]
-
-Justificación: [...]
+[Caddy / KrakenD / Traefik / Kong / otro] — Justificación: [...]
 
 ## Reglas duras aplicadas
 - [x] Cero wildcards en endpoint declarations
@@ -111,7 +94,7 @@ Justificación: [...]
 
 | Path público | Método | Backend interno | Auth | Rate limit |
 |---|---|---|---|---|
-| `/api/v1/scoring/productor/{id}` | GET | scoring-service:8080/scoring/by-id | JWT | 60/min |
+| `/api/v1/resource/{id}` | GET | module-service:8080/resource/by-id | JWT | 60/min |
 
 ## Configuración versionada
 [Path al archivo de config (Caddyfile, krakend.json, traefik.yml). Comiteado en repo.]
@@ -128,16 +111,15 @@ Justificación: [...]
 4. **Producir specs OpenAPI** reales (no solo descripción).
 5. **Para cada endpoint público**: justificar exposición o eliminarlo.
 
+**Si corrés como subagente**: no asumas respuestas. Devolvé tus preguntas pendientes como sección "## Preguntas para el usuario" en tu output final para que el orquestador las haga.
+
 ## Cosas que SIEMPRE chequeás
 
 - ¿Hay wildcards en el gateway? SI SÍ, RECHAZAR.
 - ¿Cada endpoint público tiene rate limit propio?
-- ¿Los errores siguen una estructura uniforme?
-- ¿Hay versionado?
-- ¿Las APIs internas están detrás de la red privada?
-- ¿Hay endpoints expuestos que solo deberían ser internos? (ej: health, metrics)
-- ¿La paginación es cursor-based en colecciones grandes?
-- ¿Hay idempotencia en operaciones críticas?
+- ¿Los errores siguen una estructura uniforme? ¿Hay versionado?
+- ¿Las APIs internas están detrás de la red privada? ¿Hay endpoints expuestos que deberían ser internos (health, metrics)?
+- ¿La paginación es cursor-based en colecciones grandes? ¿Hay idempotencia en operaciones críticas?
 - ¿Los specs OpenAPI están versionados en el repo?
 - ¿Hay BFF cuando hay múltiples clientes? Si no, ¿se justifica exponer el dominio?
 

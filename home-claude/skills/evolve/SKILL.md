@@ -9,9 +9,7 @@ Skill orquestador para evolucionar proyectos que ya pasaron Fase 6. **Reusa los 
 
 ## Por qué este skill existe
 
-El framework mls-power-agents está optimizado para greenfield linear (Fase 0 → 6). Pero los proyectos reales no viven en greenfield: después de salir a producción, evolucionan. Sin un flujo específico, evolucionar usando el flujo greenfield resulta en **overhead masivo**: ¿el Product Discovery agent haciendo discovery para agregar un toggle? ¿Gate 0 formal para un hotfix?
-
-Este skill provee 4 modos calibrados a 4 escenarios reales de evolución.
+El flujo greenfield (Fase 0 → 6) aplicado a un producto vivo es overhead masivo (¿discovery para un toggle? ¿Gate 0 para un hotfix?). Este skill provee 4 modos calibrados a 4 escenarios reales de evolución.
 
 ## Decisión de modo
 
@@ -84,11 +82,9 @@ el Business Analyst produce `docs/context/features/F-NNN-<nombre>.md`:
 
 ## Tests adicionales
 
-- Unit nuevos: ...
-- Integration: ...
-- E2E: ...
+- Unit nuevos / Integration / E2E: ...
 
-## Decisiones (ADRs si aplica)
+## Decisiones
 
 - ADR-NNN si hay decisión técnica no obvia
 ```
@@ -130,9 +126,7 @@ el Release Manager aplica `release-checklist` (skill existente) en versión `MIN
 
 ### Tiempo objetivo del modo feature
 
-- Features chicas (1 UC, sin DB): 1-2 días.
-- Features medianas (3-5 UCs, alguna migración): 3-5 días.
-- Features grandes (10+ UCs, cambios estructurales): considerar romper en sub-features o aplicar modo `migration`.
+Chicas (1 UC, sin DB): 1-2 días. Medianas (3-5 UCs, alguna migración): 3-5 días. Grandes (10+ UCs, cambios estructurales): romper en sub-features o aplicar modo `migration`.
 
 ---
 
@@ -171,7 +165,6 @@ Vos (o el Security Architect si es security incident) escribís `docs/runbooks/i
 
 ## Repro pasos
 1. ...
-2. ...
 
 ## Hipótesis causa raíz
 [de qué sospechás antes de investigar]
@@ -234,27 +227,18 @@ Procedure: `git revert <commit-fix>` + redeploy + comunicar.
 - HH:MM verificado resuelto
 
 ## Causa raíz (5 whys)
-1. Por qué pasó X?
-2. Por qué Y?
-3. ...
-5. Causa raíz: ___
+1. Por qué pasó X? → ... (iterar hasta la causa raíz)
 
-## Qué funcionó
-- ...
-
-## Qué falló
+## Qué funcionó / qué falló
 - ...
 
 ## Action items con owner y fecha
 - [ ] <acción específica> — owner: <nombre> — fecha: <fecha>
-- [ ] ...
 ```
 
 ### Tiempo objetivo del modo hotfix
 
-- Investigación + fix + tests: 1-8h
-- Deploy: 30 min - 2h
-- Post-mortem: dentro de 7 días, 1-2h
+Investigación + fix + tests: 1-8h. Deploy: 30 min - 2h. Post-mortem: dentro de 7 días, 1-2h.
 
 ---
 
@@ -330,15 +314,13 @@ el Release Manager aplica `release-checklist` en versión `PATCH`. Mencionar en 
 
 ### Tiempo objetivo del modo refactor
 
-- Refactors locales (1 archivo, 1 función): horas.
-- Refactors de módulo: 1-3 días.
-- Refactors arquitectónicos (toca varios módulos): considerar migrar a modo `migration`.
+Locales (1 archivo, 1 función): horas. De módulo: 1-3 días. Arquitectónicos (varios módulos): considerar migrar a modo `migration`.
 
 ---
 
 ## Modo 4: `migration`
 
-**Cuándo**: cambio tecnológico mayor. Postgres 15 → 17. Node 18 → 22. el Frontend Developer pasa de Vite a Bun. Backend cambia de chi a echo. Provider de Railway a Fly.io.
+**Cuándo**: cambio tecnológico mayor. Postgres 15 → 17, Node 18 → 22, cambio de framework core, provider de Railway a Fly.io.
 
 ### Reglas duras del modo migration
 
@@ -365,9 +347,7 @@ Documento más largo. Estructura:
 
 ## Qué se migra
 
-- Componente / sistema: <descripción>
-- Versión actual: <X>
-- Versión target: <Y>
+- Componente / sistema: <descripción>. Versión actual <X> → target <Y>.
 
 ## Estrategia
 
@@ -375,9 +355,7 @@ Una de: big_bang | dual_running | blue_green | canary | branch_by_abstraction.
 
 ### Plan detallado
 
-1. <paso 1>
-2. <paso 2>
-...
+1. <paso 1>, 2. <paso 2>, ...
 
 ### Criterios de "go / no-go" antes del cutover
 
@@ -396,13 +374,10 @@ Una de: big_bang | dual_running | blue_green | canary | branch_by_abstraction.
 
 | Riesgo | Probabilidad | Impacto | Mitigación |
 |---|---|---|---|
-| ... | ... | ... | ... |
 
 ## Costo estimado (el Cost Estimator)
 
-- Tiempo: <días>
-- USD adicionales: <USD>
-- Downtime esperado: <minutos / cero>
+- Tiempo: <días> / USD adicionales: <USD> / Downtime esperado: <minutos / cero>
 
 ## Métricas pre / post
 
@@ -410,7 +385,6 @@ Una de: big_bang | dual_running | blue_green | canary | branch_by_abstraction.
 |---|---|---|
 | Latency p99 | __ms | ≤__ms |
 | Error rate | __% | ≤__% |
-| ... | ... | ... |
 ```
 
 #### 2. Adversarial review (obligatorio)
@@ -448,9 +422,7 @@ Watching activo:
 
 ### Tiempo objetivo del modo migration
 
-- Migraciones simples (lib update): 1-5 días.
-- Migraciones medias (provider de infra): 1-3 semanas.
-- Migraciones grandes (DB engine, language version mayor): 1-3 meses.
+Simples (lib update): 1-5 días. Medias (provider de infra): 1-3 semanas. Grandes (DB engine, language version mayor): 1-3 meses.
 
 ---
 

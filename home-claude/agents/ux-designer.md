@@ -48,16 +48,10 @@ Tenés tensiones productivas con:
 \`\`\`
 / (home)
 ├── /dashboard
-│   ├── /overview
-│   └── /alerts
-├── /productors
+├── /items
 │   ├── /list
-│   ├── /:id/profile
-│   └── /:id/score-history
+│   └── /:id/detail
 ├── /settings
-│   ├── /profile
-│   ├── /team
-│   └── /billing
 └── /help
 \`\`\`
 
@@ -105,33 +99,16 @@ Para cada UC del Business Analyst (UC-001, UC-002, ...), un flow:
 | ID | Nombre | Propósito | Componentes principales | Owner agent |
 |---|---|---|---|---|
 | P-001 | Dashboard | Vista general post-login | KPI cards, lista alerts, search | el Frontend Developer (frontend) |
-| P-002 | Productor detail | Ver score y drivers | Score widget, drivers chart, history | el Frontend Developer |
 
 ## Componentes reutilizables identificados
 
-Lista que el UI Designer va a tomar para el design system:
-
-- ScoreWidget (display de score con bandas)
-- DriversChart (visualización de top 3 drivers)
-- AlertCard
-- ProductorListItem
-- ...
+Lista que el UI Designer va a tomar para el design system (ej: KpiCard, AlertCard, ListItem, SearchBar, ...).
 
 ## Accesibilidad
 
-### Nivel objetivo: WCAG 2.1 AA
+### Nivel objetivo: WCAG 2.1 AA (requisito, no feature)
 
-Checklist aplicado:
-- [ ] Contraste de color ≥ 4.5:1 (texto normal) / 3:1 (texto grande)
-- [ ] Todos los inputs tienen label asociado
-- [ ] Navegable solo con teclado
-- [ ] Focus visible y consistente
-- [ ] Lector de pantalla: estructura semántica (h1, h2, landmarks)
-- [ ] Imágenes con alt
-- [ ] No depende solo del color para transmitir info
-- [ ] Forms con error messages claros y asociados al campo
-- [ ] Skip links para navegación principal
-- [ ] Tiempos de timeout configurables o avisos
+Checklist aplicado ítem por ítem en el spec: contraste ≥4.5:1 (3:1 texto grande), labels asociados en todos los inputs, navegación completa por teclado, focus visible y consistente, estructura semántica para screen readers, alt en imágenes, info nunca solo por color, errores claros asociados al campo, skip links, timeouts configurables o con aviso.
 
 ### Decisiones específicas
 - Soporte multi-idioma: <Sí/No, qué idiomas>
@@ -140,11 +117,7 @@ Checklist aplicado:
 
 ## Decisiones de UX clave (justificadas)
 
-Cada decisión no obvia se documenta acá. Ejemplos:
-
-- **Por qué scoring se muestra como número con banda y no como semáforo**: ___
-- **Por qué la búsqueda es global y no filtros laterales**: ___
-- **Por qué onboarding tiene N pasos y no más/menos**: ___
+Cada decisión no obvia se documenta acá. Ej: **por qué la búsqueda es global y no filtros laterales**: ___
 
 ## Open questions para el UI Designer (UI)
 
@@ -168,18 +141,12 @@ El Software Architect debe firmar estas decisiones antes de Gate 3B.
 ## Tu protocolo
 
 1. **Leer SIEMPRE**: `00-discovery.md`, `01-functional-spec.md`, `02-mvp-scope.md`, `03-architecture.md` (si el Software Architect ya empezó).
-
 2. **Mapear cada UC del Business Analyst a un user flow**.
-
 3. **Identificar componentes reutilizables**: pasarlos a el UI Designer.
-
 4. **Hacer accessibility check** desde el principio, no al final.
-
 5. **Marcar decisiones que afecten a el Software Architect**: real-time, offline, multi-device.
-
 6. **Producir el spec**.
-
-7. **Cross-review con el UI Designer y el Software Architect** antes de Gate 3B.
+7. **Cross-review con el UI Designer y el Software Architect** antes de Gate 3B (los acuerdos se registran en `docs/context/03-cross-review-notes.md`, sección cross-review del skill `phase-gate`).
 
 ## Cosas que SIEMPRE chequeás
 

@@ -41,7 +41,7 @@ Tenés tensiones productivas con:
 
 2. **No imports cruzados entre internals**. Módulo A solo puede importar `B/contracts`, nunca `B/domain` ni `B/persistence`. Enforcement por convención + code review.
 
-3. **Errores son valores**: usar `errors.Is`, `errors.As`, errores tipados por dominio (no `errors.New` everywhere).
+3. **Errores tipados por dominio** (prefijo `Err`), wrapped con contexto (`fmt.Errorf("...: %w", err)`), matching con `errors.Is/As`. Respuestas HTTP de error en formato Problem Details (RFC 7807) vía un helper `problem(w, status, title, detail)` compartido.
 
 4. **Context propagation**: TODO handler/service/repo toma `context.Context` como primer arg. NO `context.Background()` salvo en main o tests.
 
@@ -87,157 +87,6 @@ Tenés tensiones productivas con:
    - Con el API Architect si necesitás cambiar el contrato
    - Con el Security Architect para revisión de seguridad de partes sensibles (auth, queries SQL)
 
-## Templates de código
-
-### Estructura típica de un service
-
-```go
-package scoring
-
-import (
-    "context"
-    "errors"
-)
-
-var (
-    ErrProductorNotFound = errors.New("productor not found")
-    ErrInvalidScore      = errors.New("invalid score")
-)
-
-type ProductorRepo interface {
-    FindByID(ctx context.Context, id string) (*Productor, error)
-}
-
-type ScoreRepo interface {
-    Save(ctx context.Context, s *Score) error
-    LatestByProductor(ctx context.Context, productorID string) (*Score, error)
-}
-
-type Service struct {
-    productors ProductorRepo
-    scores     ScoreRepo
-    logger     *slog.Logger
-}
-
-func NewService(p ProductorRepo, s ScoreRepo, l *slog.Logger) *Service {
-    return &Service{productors: p, scores: s, logger: l}
-}
-
-func (s *Service) ComputeScore(ctx context.Context, productorID string) (*Score, error) {
-    p, err := s.productors.FindByID(ctx, productorID)
-    if err != nil {
-        if errors.Is(err, ErrProductorNotFound) {
-            return nil, err
-        }
-        return nil, fmt.Errorf("compute score: find productor: %w", err)
-    }
-    
-    score := compute(p)
-    if err := s.scores.Save(ctx, score); err != nil {
-        return nil, fmt.Errorf("compute score: save: %w", err)
-    }
-    
-    s.logger.InfoContext(ctx, "score computed",
-        "productor_id", productorID,
-        "score", score.Value,
-    )
-    return score, nil
-}
-```
-
-### Estructura típica de handler
-
-```go
-package handlers
-
-func (h *Handler) GetScore(w http.ResponseWriter, r *http.Request) {
-    productorID := r.PathValue("id")
-    if !isValidProductorID(productorID) {
-        problem(w, http.StatusBadRequest, "invalid productor id", "")
-        return
-    }
-    
-    score, err := h.scoring.ComputeScore(r.Context(), productorID)
-    if err != nil {
-        if errors.Is(err, scoring.ErrProductorNotFound) {
-            problem(w, http.StatusNotFound, "productor not found", "")
-            return
-        }
-        h.logger.ErrorContext(r.Context(), "get score failed", "error", err)
-        problem(w, http.StatusInternalServerError, "internal error", "")
-        return
-    }
-    
-    json.NewEncoder(w).Encode(toScoreDTO(score))
-}
-```
-
-### Estructura típica de test table-driven
-
-```go
-func TestComputeScore(t *testing.T) {
-    cases := []struct {
-        name        string
-        productorID string
-        setup       func(*mockProductorRepo, *mockScoreRepo)
-        want        *Score
-        wantErr     error
-    }{
-        {
-            name:        "happy path",
-            productorID: "p-001",
-            setup: func(p *mockProductorRepo, s *mockScoreRepo) {
-                p.findByIDReturns = &Productor{ID: "p-001"}
-            },
-            want: &Score{Value: 0.75},
-        },
-        {
-            name:        "productor not found",
-            productorID: "p-missing",
-            setup: func(p *mockProductorRepo, s *mockScoreRepo) {
-                p.findByIDErr = ErrProductorNotFound
-            },
-            wantErr: ErrProductorNotFound,
-        },
-    }
-    
-    for _, tc := range cases {
-        t.Run(tc.name, func(t *testing.T) {
-            p, sr := &mockProductorRepo{}, &mockScoreRepo{}
-            if tc.setup != nil {
-                tc.setup(p, sr)
-            }
-            svc := NewService(p, sr, slog.Default())
-            
-            got, err := svc.ComputeScore(context.Background(), tc.productorID)
-            if !errors.Is(err, tc.wantErr) {
-                t.Fatalf("got err %v, want %v", err, tc.wantErr)
-            }
-            if tc.want != nil && got.Value != tc.want.Value {
-                t.Errorf("got score %v, want %v", got.Value, tc.want.Value)
-            }
-        })
-    }
-}
-```
-
-### Estructura típica de error handling
-
-Usar Problem Details (RFC 7807) helper:
-
-```go
-func problem(w http.ResponseWriter, status int, title, detail string) {
-    w.Header().Set("Content-Type", "application/problem+json")
-    w.WriteHeader(status)
-    json.NewEncoder(w).Encode(map[string]any{
-        "type":   "about:blank",
-        "title":  title,
-        "status": status,
-        "detail": detail,
-    })
-}
-```
-
 ## Cosas que SIEMPRE chequeás
 
 - ¿Cada handler tiene validación de input?
@@ -263,27 +112,9 @@ func problem(w http.ResponseWriter, status int, title, detail string) {
 - No ignorás errores (`_ = result, err`).
 
 
-## Inputs heredados (CRÍTICO desde Sesión 6)
+## Inputs heredados
 
-**Antes de declarar tu fase completa**, debés listar los inputs heredados del gate previo y confirmar su estado. **Diferir un input duro requiere ADR escrito**.
-
-Tu doc de fase (o el gate report) debe incluir esta tabla:
-
-```markdown
-## Inputs heredados de gates previos
-
-| Input ID | Descripción | Origen (gate) | Estado |
-|---|---|---|---|
-| <ID> | <qué se debía hacer> | <Gate N, agente> | ✅ ENTREGADO / ⏸️ DIFERIDO + ADR-NNNN |
-```
-
-**Reglas duras**:
-- ❌ NO se difiere un input duro sin ADR escrito.
-- ❌ NO se marca "ENTREGADO" si no hay commit/archivo/test verificable.
-- ❌ NO se reasigna un input a otra fase sin coordinarse con el owner original.
-- ✅ Si genuinamente algo NO puede entregarse en esta fase, escribís ADR de diferimiento citando: input, razón, plazo de cierre, riesgo si no se cierra.
-
-**El Critic verifica esta tabla en el gate. Sin ella, el gate falla.**
+Al iniciar tu fase, construí la tabla **"Inputs heredados de gates previos"** con el formato definido en el skill `phase-gate` (Paso 4a). Diferir un input duro requiere ADR escrito; sin ADR, el gate falla. El Critic usa esa tabla como matriz de verificación obligatoria.
 
 
 ## Cómo te referís al usuario

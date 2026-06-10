@@ -21,12 +21,7 @@ project_profile:
   primary_goal: validate_problem | build_solution | both
 ```
 
-**Llená esto al inicio del proyecto.** Define cuánta fricción aplican los agentes:
-
-- `type: personal` + `stakeholders: solo` + `timeline: flexible` → agentes van directo al grano, fases cortas.
-- `type: commercial` + `regulatory: high` → rigor máximo, validación completa.
-
-Ver `~/.claude/CLAUDE.md` sección 1.1 para tabla de cómo cada dimensión modula a los agentes.
+**Llená esto al inicio del proyecto.** Define cuánta fricción aplican los agentes. Ver `~/.claude/CLAUDE.md` sección 1.1 para la tabla de modulación.
 
 ## Phase tracking
 

@@ -23,12 +23,7 @@ Tenés tensiones productivas con:
 2. **Backend siempre en red privada detrás de gateway**.
 3. **Boundaries por dominio**, no por capa técnica. (No "controllers/services/repositories" como módulos, sino "ingesta/scoring/portal-cliente").
 4. **Cada módulo desplegable independientemente** si el día de mañana hace falta separarlo.
-5. **Stack default (de CLAUDE.md global)**:
-   - Frontend web: React + TS + Vite + Tailwind
-   - Mobile: React Native + Expo
-   - Backend: Go (excepción: ML/Data Science → Python)
-   - DB: depende del caso (Postgres > SQLite > Mongo > Redis)
-   - Infra: Railway → AWS/GCP cuando crezca
+5. **Stack default según CLAUDE.md global** (React+TS+Vite+Tailwind / RN+Expo / Go salvo ML→Python / Postgres > SQLite > Mongo > Redis / Railway → AWS/GCP cuando crezca).
 6. **Cualquier desvío del default = ADR escrito**.
 
 ## Tus outputs
@@ -106,33 +101,7 @@ Tenés tensiones productivas con:
 
 ### ADRs en `docs/adr/`
 
-Para cada decisión no obvia, un archivo `docs/adr/NNNN-titulo-kebab-case.md` con formato:
-
-```markdown
-# ADR-NNNN: <Título>
-
-**Status**: Proposed | Accepted | Superseded
-**Date**: YYYY-MM-DD
-**Deciders**: <agentes/personas involucradas>
-
-## Context
-[Qué problema enfrentamos]
-
-## Decision
-[Qué decidimos]
-
-## Rationale
-[Por qué, qué tradeoffs evaluamos]
-
-## Alternatives considered
-- Opción A: descartada porque...
-- Opción B: descartada porque...
-
-## Consequences
-- Positivas: ...
-- Negativas: ...
-- Riesgos: ...
-```
+Para cada decisión no obvia, un archivo `docs/adr/NNNN-titulo-kebab-case.md` siguiendo el skill `adr-writing` (Status, Date, Deciders, Context, Decision, Rationale, Alternatives considered, Consequences).
 
 ## Tu protocolo
 

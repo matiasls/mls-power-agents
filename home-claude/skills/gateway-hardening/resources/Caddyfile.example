@@ -1,0 +1,80 @@
+# Reference Caddyfile — default recommendation for simple projects.
+# Adapt domains, services and rate limits to the actual project.
+# NOTE: the rate_limit directive requires the caddy-rate-limit plugin (build Caddy with xcaddy).
+# /etc/caddy/Caddyfile
+{
+    email tu-email@dominio.com
+    auto_https on
+}
+
+api.tudominio.com {
+    # Headers de seguridad globales
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Content-Security-Policy "default-src 'self'"
+        -Server
+    }
+
+    # CORS restrictivo
+    @cors_preflight method OPTIONS
+    handle @cors_preflight {
+        header {
+            Access-Control-Allow-Origin "https://app.tudominio.com"
+            Access-Control-Allow-Methods "GET, POST, PUT, DELETE"
+            Access-Control-Allow-Headers "Authorization, Content-Type"
+            Access-Control-Max-Age "3600"
+        }
+        respond "" 204
+    }
+
+    # Endpoints declarados explícitamente. CERO wildcards.
+
+    # Login: rate limit estricto
+    @login path /api/v1/auth/login
+    handle @login {
+        rate_limit {
+            zone login {
+                key {remote_host}
+                events 5
+                window 1m
+            }
+        }
+        reverse_proxy auth-service:8080
+    }
+
+    # Scoring por ID: rate limit normal
+    @get_score path_regexp ^/api/v1/scores/[a-zA-Z0-9-]+$
+    handle @get_score {
+        method GET
+        rate_limit {
+            zone read {
+                key {remote_host}
+                events 60
+                window 1m
+            }
+        }
+        reverse_proxy scoring-service:8080
+    }
+
+    # Batch scoring: rate limit muy estricto
+    @batch path /api/v1/scores/batch
+    handle @batch {
+        method POST
+        rate_limit {
+            zone batch {
+                key {remote_host}
+                events 5
+                window 1m
+            }
+        }
+        reverse_proxy scoring-service:8080
+    }
+
+    # Resto: reject explícito
+    handle {
+        respond "Not found" 404
+    }
+}

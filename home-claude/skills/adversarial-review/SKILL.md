@@ -15,7 +15,7 @@ Este skill ejecuta un panel adversarial entre agentes para estresar una decisió
 - Cuando el usuario dice "no estoy seguro" sobre una decisión importante.
 - Auto-invocar cuando el Software Architect (architect) presenta una arquitectura propuesta y antes de finalizarla.
 
-## Activación automática (desde Sesión 6)
+## Activación automática
 
 **El skill se activa automáticamente cuando se cumple cualquiera de estas condiciones**:
 
@@ -24,7 +24,7 @@ Este skill ejecuta un panel adversarial entre agentes para estresar una decisió
 3. Hay una decisión central que afecta a ≥3 dominios distintos.
 4. El Critic detecta un patrón de "entregables justificados pero potencialmente desproporcionados al MVP".
 
-**Por qué este cambio**: en splitwise-mini, los 3 Plan B del DA en gates 1, 2 y 3 fueron adoptados. Sin el DA, el MVP habría salido con scope 30-50% inflado. El DA es **bloqueante real, no decorativo** — debe activarse por defecto en estos casos, no depender de que el usuario "lo invoque".
+El DA es **bloqueante real, no decorativo** — debe activarse por defecto en estos casos, no depender de que el usuario "lo invoque". Su Plan B se aplica por addendum firmado (ver sección Plan B del skill `phase-gate`).
 
 ## Instrucción especial al DA en panel sobre fases multi-agente
 
@@ -36,11 +36,7 @@ Cuando el DA se activa por una fase multi-agente (≥3 agentes paralelos), su pr
 
 ### Paso 1: Identificar la decisión
 
-Una sola decisión central, no una lista. Ej:
-- "¿Monolito modular o microservicios?"
-- "¿Postgres o DynamoDB?"
-- "¿Caddy, KrakenD o Traefik como gateway?"
-- "¿El MVP incluye dashboard del cliente o solo API?"
+Una sola decisión central, no una lista. Ej: "¿Monolito modular o microservicios?", "¿Caddy, KrakenD o Traefik como gateway?", "¿El MVP incluye dashboard del cliente o solo API?"
 
 ### Paso 2: Identificar los participantes
 

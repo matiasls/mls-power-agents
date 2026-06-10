@@ -15,7 +15,7 @@ Leer `docs/context/gates/` y determinar la última fase aprobada.
 
 ### Paso 2: Invocar a el Doc Sentinel
 
-Invocar a `sara-doc-sentinel`:
+Invocar a `doc-sentinel`:
 - Pasa la fase actual
 - el Doc Sentinel revisa toda la doc obligatoria para esa fase
 - el Doc Sentinel detecta drift contra el código

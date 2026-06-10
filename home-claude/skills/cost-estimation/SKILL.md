@@ -26,46 +26,31 @@ Skill operativo del Cost Estimator para estimar costos del MVP y del primer año
 | Asesoría legal | consultas a estudio, redacción de docs |
 | Setup inicial cloud | configuración, certificados, accounts |
 | Onboarding herramientas | Sentry, Datadog, password manager, etc. |
-| Hardware | si requerido (no aplica usualmente) |
 | Buffer | siempre 15-20% del subtotal |
 
 #### Costos recurrentes (mensuales / anuales)
 
 | Categoría | Items típicos |
 |---|---|
-| Infrastructure | Railway / AWS / GCP / VPS |
-| Database managed | RDS, Cloud SQL, Railway Postgres |
-| APIs externas | Nosis, Stripe (% por transacción), Twilio, etc. |
-| Email / SMS | SendGrid, Twilio, Mailgun |
-| Observability | Sentry, Datadog, Better Stack, Logtail |
-| CDN / Edge | Cloudflare, Vercel Edge, CloudFront |
-| Storage | S3, R2, GCS |
-| Backups | retention adicional, off-site |
-| Domain & SSL | Letsencrypt = gratis, certs wildcard a veces no |
-| DNS | Cloudflare gratis, Route53 pago |
+| Infrastructure + DB managed | Railway / AWS / GCP / VPS, RDS, Railway Postgres |
+| APIs externas | Nosis, Stripe (% por transacción), Twilio, SendGrid |
+| Observability | Sentry, Datadog, Better Stack |
+| CDN / Storage / Backups | Cloudflare, S3/R2, retention adicional |
+| Domain / SSL / DNS | Letsencrypt gratis; wildcard y Route53 a veces no |
 | Office tools | GitHub team, Notion, Figma, Slack |
 
 #### Costos variables por volumen
 
-Identificar drivers (cosas que escalan con uso):
+Identificar drivers (cosas que escalan con uso) y proyectar:
 
 | Driver | Costo unitario | A 100 unidades | A 1.000 | A 10.000 |
 |---|---|---|---|---|
 | API call externa (Nosis) | USD 0.50 | $50 | $500 | $5,000 |
-| Consulta satelital | USD 1.00 | $100 | $1,000 | $10,000 |
-| Storage por GB | USD 0.023 | (depende del volumen) | | |
-| Egress por GB | USD 0.09 | | | |
+| Storage / egress por GB | (según provider) | | | |
 
 ### Paso 3: Buscar precios actuales
 
-Para servicios cuyos precios pueden haber cambiado en últimos 6 meses, usar `WebSearch`:
-
-- "Railway pricing 2026"
-- "AWS RDS Postgres pricing per GB"
-- "Sentry team plan pricing"
-- "Cloudflare R2 storage pricing"
-
-NO inventes precios. Si no estás segura, dejá rango ancho con bandera.
+Para servicios cuyos precios pueden haber cambiado en últimos 6 meses, usar `WebSearch` (ej: "Railway pricing 2026"). NO inventes precios. Si no estás segura, dejá rango ancho con bandera.
 
 ### Paso 4: Aplicar tres escenarios
 
@@ -109,9 +94,9 @@ Siempre considerar (la mayoría se olvidan):
 
 Para cada item caro, listar opciones:
 
-| Costo | Opción 1 | Ahorro estimado | Tradeoff |
+| Costo | Opción | Ahorro estimado | Tradeoff |
 |---|---|---|---|
-| Postgres managed RDS | Railway Postgres en su lugar | -USD 40/mes | Menos features (PITR limitado, etc.) |
+| Postgres managed RDS | Railway Postgres | -USD 40/mes | Menos features (PITR limitado, etc.) |
 | Sentry team plan | Sentry developer + self-hosted GlitchTip | -USD 30/mes | Mantenimiento manual |
 
 ### Paso 8: Plan de migración (si crecés)
@@ -121,8 +106,7 @@ Si superás cierto threshold, ¿qué tenés que cambiar?
 | A partir de | Cambio sugerido | Costo migración | Costo recurrente nuevo |
 |---|---|---|---|
 | 1000 usuarios activos | DB con replica | USD 0 | +USD 50/mes |
-| 10000 usuarios | CDN | USD 0 | +USD 20/mes |
-| 100K transacciones/mes | Datos warehouse separado | USD 500-2000 | +USD 100/mes |
+| 100K transacciones/mes | Data warehouse separado | USD 500-2000 | +USD 100/mes |
 
 ## Output esperado
 
@@ -138,22 +122,18 @@ Si superás cierto threshold, ¿qué tenés que cambiar?
 - Volumen estimado año 1: <X> usuarios, <Y> transacciones/mes
 
 ## Costos one-time
-
 | Item | Optimista | Realista | Pesimista | Notas |
 |---|---|---|---|---|
 
 ## Costos recurrentes mensuales
-
 | Item | Optimista | Realista | Pesimista | Notas |
 |---|---|---|---|---|
 
 ## Costos variables por volumen
-
 | Driver | Costo unitario | A 100 | A 1K | A 10K |
 |---|---|---|---|---|
 
 ## Escenarios año 1 totales
-
 | Escenario | One-time | Recurrente anual | Total año 1 | vs Budget |
 |---|---|---|---|---|
 
@@ -161,10 +141,7 @@ Si superás cierto threshold, ¿qué tenés que cambiar?
 [✅ / ⚠️ / ❌ + recomendación]
 
 ## Costos NO incluidos (transparencia)
-- Tiempo del equipo
-- Marketing
-- Contadores
-- ...
+- Tiempo del equipo, marketing, contadores, ...
 
 ## Opciones de reducción
 [Lista priorizada]
