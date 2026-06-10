@@ -25,9 +25,9 @@ De los UCs del Business Analyst (`01-functional-spec.md`) extraer todas las feat
 
 ### Paso 3: Aplicar el filtro de hipótesis
 
-Para cada feature, preguntar:
+Auto-interrogación del agente (NO es pregunta al usuario): mapear automáticamente cada feature contra las hipótesis del discovery (`00-discovery.md`) — H-1, H-2, etc. del Product Discovery agent.
 
-**¿Qué hipótesis valida esta feature?** (mapear a H-1, H-2, etc. del Product Discovery agent)
+**Feature sin hipótesis mapeable = candidata a out-of-MVP con razón escrita.**
 
 Si no mapea a ninguna hipótesis crítica → **NO entra al MVP**, va a backlog.
 
@@ -65,6 +65,8 @@ Para el MVP completo, definir 2-4 señales que matan el proyecto:
 Sin kill criteria, los proyectos se vuelven zombies.
 
 ### Paso 8: Producir output
+
+Doctrina Propose-first (CLAUDE.md §8): el skill produce **EL corte recomendado completo** (qué entra / qué no entra, con justificación por feature). NO se le pregunta al usuario qué quiere que entre durante la ejecución: el usuario ajusta el corte en el Gate 2.
 
 `docs/context/02-mvp-scope.md` con:
 - Hipótesis crítica única

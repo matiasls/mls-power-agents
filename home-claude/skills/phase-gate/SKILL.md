@@ -53,7 +53,13 @@ El output principal de la fase debe incluir una sección **"Inputs heredados de 
 
 ### Paso 4b: Checks específicos por fase
 
-Si alguno falla, **marcarlo como bloqueante**:
+**Check transversal (doctrina Propose-first, CLAUDE.md global §8)** — aplica a TODOS los gates:
+- [ ] Cada artefacto de la fase tiene sección "## Supuestos" (falta → warning)
+- [ ] "Decisiones para el usuario": máx 3 por artefacto, todas con default recomendado (violación → finding "propose-first violation")
+- [ ] Cero preguntas de temas prohibidos (staffing, background del usuario, disponibilidad actual de datos de terceros → deben estar en "Prerequisitos de implementación")
+- [ ] Spot-check de grounding (2-3 citas por artefacto verificadas contra la fuente; datos duros con URL + fecha)
+
+Checks por fase — si alguno falla, **marcarlo como bloqueante**:
 
 #### Gate 0 (Discovery)
 - [ ] `docs/context/00-discovery.md` existe
@@ -115,6 +121,8 @@ Cada finding del Critic debe tener un **enforcement_status**. Solo estos estados
 
 **Regla dura**: con findings en `BLOCKED_BY_PROCESS`, el gate **no cierra**. Los warnings "con owner y ETA" se evaporan entre fases y reaparecen como bloqueantes ~4× más caros; el enforcement mecánico mantiene el costo en 1×.
 
+**Vía de salida (la IA hace el trabajo de destrabar)**: para cada finding que quede en `BLOCKED_BY_PROCESS`, el agente responsable REDACTA el ADR de riesgo aceptado (riesgo + por qué aceptarlo + cuándo se revisa), listo para firma. En el gate, el usuario solo decide: firmar el ADR (→ `RISK_ACCEPTED`) o exigir resolución (→ iterar). Nunca se le pide al usuario que redacte ni que "se acuerde".
+
 Formato del finding:
 
 ```yaml
@@ -145,11 +153,13 @@ Formato del finding:
 1. Resumen de findings ordenado por severidad
 2. Devil's Advocate position (si aplicó)
 3. Estado de docs según el Doc Sentinel
-4. Pregunta concreta:
+4. **Recomendación explícita del Critic** (siempre): "Recomiendo aprobar" o "Recomiendo iterar por F-001, F-003" con 1-2 frases de fundamento
+5. Pregunta concreta:
 
 ```
 El Gate N cerró con:
 - 🔴 BLOQUEANTES: X | 🟡 WARNINGS: Y | 🟢 SUGERENCIAS: Z
+- Recomendación del Critic: <aprobar | iterar por ...>
 
 ¿Querés: 1. Aprobar y avanzar | 2. Iterar | 3. Cambiar de dirección?
 ```
@@ -277,6 +287,7 @@ Cuando agentes trabajan en paralelo (típicamente UX/UI en 3A y arquitectura en 
 ## Reglas duras del gate
 
 - **NUNCA aprobar gate con bloqueantes abiertos** sin decisión explícita del usuario.
+- **Puntos de control humano** (CLAUDE.md global §8.1): además de los gates, SIEMPRE se consulta antes de gastar dinero real, deployar a producción o publicar algo externo — aun a mitad de una fase. Nada más detiene el trabajo.
 - **Gate 3B**: verificar con el Security Architect que el gateway no tiene wildcards. Wildcards → bloqueante automático.
 - **Gate 4**: verificar con el Doc Sentinel que `docs/EXECUTION.md` existe con local + staging + prod.
 - **Gate 5**: verificar coverage ≥85% (ejecutar el comando de coverage si hay tests).

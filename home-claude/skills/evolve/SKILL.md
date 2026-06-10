@@ -22,7 +22,7 @@ El usuario invoca `/evolve` y elige uno de 4 modos:
 | `refactor` | Mejorar código sin cambios funcionales | 0.5-3 días | Confundir con feature → cambia comportamiento |
 | `migration` | Cambio tecnológico mayor (DB, runtime, libs core) | 1-4 semanas | Subestimar → proyecto roto |
 
-**El usuario elige. Si dudás, preguntás.** No asumir automáticamente "es un hotfix" porque suena urgente.
+**Si la señal es clara (ej: "bug crítico en prod" → hotfix; "agregar X" → feature), asumí el modo, declaralo en una línea y seguí.** Preguntá solo si la señal es genuinamente ambigua entre dos modos con flujos muy distintos — y con tu recomendación como default.
 
 ## Pre-condiciones (todas los modos)
 
@@ -466,4 +466,4 @@ El usuario invoca `/evolve` con argumento o lo dice en lenguaje natural:
 - "El módulo de scoring está hecho un caos, hay que limpiarlo" → `refactor`
 - "Vamos a migrar de Postgres 15 a 17" → `migration`
 
-Si el modo no es claro, **preguntar explícitamente** con las 4 opciones antes de proceder.
+Si la señal es genuinamente ambigua entre dos modos con flujos muy distintos, preguntar con las opciones en juego y tu recomendación como default (ver "Decisión de modo"). Si la señal es clara, asumir el modo, declararlo y proceder.

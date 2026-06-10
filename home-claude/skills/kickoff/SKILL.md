@@ -1,11 +1,11 @@
 ---
 name: kickoff
-description: Start a new project. Triggers Fase 0 (Discovery) with the Product Discovery agent leading. Use when starting any new project. Usage: /kickoff "<short project description>". Auto-invoke when user says "nuevo proyecto", "tengo una idea", "quiero empezar", "kickoff".
+description: Start a new project. Triggers Fase 0 (Discovery) with the Product Discovery agent leading. Accepts an existing functional doc/spec as primary source. Use when starting any new project. Usage: /kickoff "<short project description>" or /kickoff "<description> — spec en <path>". Auto-invoke when user says "nuevo proyecto", "tengo una idea", "quiero empezar", "kickoff".
 ---
 
 # Kickoff — Start a new project
 
-Este comando arranca un proyecto nuevo siguiendo el flujo del setup personal.
+Este comando arranca un proyecto nuevo siguiendo el flujo del setup personal, bajo la doctrina **Propose-first** (CLAUDE.md global §8): el discovery sale COMPLETO de una pasada, con supuestos declarados y recomendaciones — no como cuestionario.
 
 ## Procedimiento
 
@@ -17,48 +17,55 @@ Este comando arranca un proyecto nuevo siguiendo el flujo del setup personal.
   mkdir -p docs/context/gates docs/adr docs/api docs/runbooks
   ```
 
-### 2. Delegar a el Product Discovery agent
+### 2. Identificar fuentes
 
-Invocar al subagente `product-discovery` con el contexto del proyecto (incluyendo archivos adjuntos si los hay).
+- Si el usuario referenció un doc funcional/spec/propuesta (en el argumento o en el repo), ese doc es la **fuente primaria** del discovery: se construye DESDE él, sin re-preguntar lo que ya dice.
+- Recolectar también `CLAUDE.md` del proyecto (project_profile) y cualquier otro material.
 
-el Product Discovery agent va a:
-1. Leer cualquier doc adjunto que el usuario haya subido.
-2. Hacer 5-8 preguntas críticas al usuario.
-3. Esperar respuestas.
-4. Iterar.
-5. Producir `docs/context/00-discovery.md`.
+### 3. Delegar al Product Discovery agent
 
-### 3. No avanzar prematuramente
+Invocar al subagente `product-discovery` con todo el material. El agente:
 
-NO ejecutar Gate 0 todavía. el Product Discovery agent decide cuándo el discovery está lo suficientemente maduro.
+1. Lee project_profile + TODOS los inputs.
+2. Extrae hechos (con cita), infiere hipótesis y riesgos, asume con defaults declarados lo que falte.
+3. Produce `docs/context/00-discovery.md` **COMPLETO de una pasada**, incluyendo su **recomendación de corte de MVP** fundamentada y kill criteria propuestos.
+4. Cierra con máximo 3 "Decisiones para el usuario", cada una con default recomendado.
 
-Cuando el Product Discovery agent considere que está listo, ofrecerle al usuario:
-- "Discovery está completo. ¿Querés que ejecute `/phase-gate 0` para validar y luego avanzar a Fase 1?"
+### 4. Presentar al usuario
 
-### 4. Setup inicial del repo (opcional)
+Mostrar en chat:
+1. Resumen ejecutivo del discovery (3-5 bullets).
+2. La recomendación de corte de MVP con su justificación.
+3. Tabla de supuestos clave (los de mayor impacto).
+4. Las decisiones con default (si las hay): "sin respuesta, avanzo con la recomendada".
+5. Oferta: "¿Ejecuto `/phase-gate 0` para validar y avanzar a Fase 1?"
+
+**No se espera respuesta para completar el doc** — el doc ya está escrito. Las respuestas del usuario se aplican como iteración sobre el doc existente.
+
+### 5. Setup inicial del repo (opcional)
 
 Si el usuario indica que quiere setup de repo desde ya:
-- Preguntar tipo de proyecto (web fullstack, mobile, full+mobile)
+- Inferir el tipo de proyecto del material (web fullstack, mobile, full+mobile); si es ambiguo, es una de las decisiones-con-default.
 - Aplicar el template correspondiente desde `~/.claude/templates/`
 - Inicializar git si no lo está
 
-### 5. Configurar CLAUDE.md del proyecto
+### 6. Configurar CLAUDE.md del proyecto
 
 Crear o actualizar `./CLAUDE.md` del proyecto con:
 - Nombre del proyecto
-- Naturaleza (personal/MVP/comercial)
+- `project_profile` (el declarado por el usuario, o el inferido del material con nota de supuesto)
 - Referencia al `~/.claude/CLAUDE.md` global
 - Override de cualquier regla específica del proyecto
 
 ## Output esperado
 
-1. `docs/context/00-discovery.md` creado/actualizado con la propuesta del Product Discovery agent
-2. Preguntas a usuario en chat
+1. `docs/context/00-discovery.md` COMPLETO (con Supuestos, Prerequisitos de implementación, Decisiones para el usuario)
+2. Resumen + recomendación en chat
 3. `./CLAUDE.md` del proyecto creado
 4. Estructura inicial de `docs/` creada
-5. (Opcional) Scaffolding inicial del repo si el usuario lo pidió
+5. (Opcional) Scaffolding inicial del repo
 
 ## Argumentos
 
-- `$ARGUMENTS`: descripción corta del proyecto. Ej: `/kickoff "AgroScore - bureau de scoring agropecuario"`
-- Si no se da argumento, el Product Discovery agent le pregunta al usuario.
+- `$ARGUMENTS`: descripción corta del proyecto, opcionalmente con referencia a docs existentes. Ej: `/kickoff "AgroScore — bureau de scoring agropecuario. Spec funcional en docs/specs/funcional.md"`
+- Si no se da argumento ni hay material, el Product Discovery agent trabaja con lo que el usuario haya dicho en la conversación y declara como supuesto lo que falte.

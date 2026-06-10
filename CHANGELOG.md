@@ -14,9 +14,35 @@
 - **Iteración 3 — Sesión 6**: correcciones estructurales por aprendizaje real (relevance-filter, plan-b-addendum, inputs heredados, enforcement mecánico, cross-review single source).
 - **Iteración 3 — Sesión 7**: prototipos interactivos con JS de simulación + ciclo de evolución post-Fase 6 (`/evolve` con 4 modos).
 - **Iteración 3 — Sesión 8**: **renombrado de agentes**. Eliminados nombres propios (Sofía, Diego, Iván, etc.) en favor de roles puros (product-discovery, software-architect, security-architect, etc.). Tono profesional preservando carácter funcional.
-- **Iteración 4 — Sesión 9** (actual): **consolidación y optimización de tokens**. 27 → 21 skills, agentes adelgazados ~25%, CLAUDE.md global 269 → ~205 líneas.
+- **Iteración 4 — Sesión 9**: **consolidación y optimización de tokens**. 27 → 21 skills, agentes adelgazados ~25%, CLAUDE.md global 269 → ~205 líneas.
+- **Iteración 4 — Sesión 10** (actual): **doctrina Propose-first + Grounding**. Los agentes dejan de interrogar: producen completo, recomiendan, declaran supuestos. Control humano solo en gates + dinero + deploy + publicación.
 
 ## Changelog del setup
+
+### Iteración 4 — Sesión 10 (2026-06-10) — doctrina Propose-first + Grounding
+
+**Trigger**: el kickoff real de AgroScore expuso el problema — el Product Discovery hizo 3 preguntas BLOQUEANTES (¿tenés el dataset?, ¿quién hace el outreach?, ¿qué MVP querés?) más 4 de calibración (background del usuario, kill criterion, proveedores) y se negó a escribir `00-discovery.md` sin respuestas. El framework estaba calibrado para validar una startup con un founder que ejecuta, no para que la IA construya. El "No asumir, preguntar" de §8 contradecía la modulación de §1.1.
+
+**CLAUDE.md global — §8 reescrita: "Doctrina de los agentes: Propose-first"**
+- §8.1: producí siempre (lagunas: docs → investigación → supuesto con default); recomendá siempre UNA opción; tabla "## Supuestos" obligatoria; máx 3 "Decisiones para el usuario" con default ("sin respuesta = avanzo con la recomendada"); temas prohibidos (staffing/equipo, background del usuario, disponibilidad actual de datos de terceros → "Prerequisitos de implementación"); puntos de control humano: gates + dinero real + deploy a prod + publicar; el disenso se resuelve entre agentes.
+- §8.2 Grounding: base epistémica obligatoria por afirmación (HECHO con cita / INFERENCIA con razonamiento / SUPUESTO en tabla); datos duros solo de fuente verificable; citas reales con spot-check del Critic; lo investigable se investiga antes de asumirse (research-analyst como herramienta anti-alucinación); preguntar solo lo genuinamente indefinido.
+- Eliminado: "No asumir, preguntar: en decisiones grandes (>2 días) el agente pregunta antes de avanzar".
+
+**Agentes**
+- `product-discovery`: rewrite profundo — de "entrevistar y esperar" a "leer, extraer (con cita), inferir, asumir con default, proponer". Produce `00-discovery.md` COMPLETO de una pasada con recomendación de corte de MVP fundamentada y kill criteria propuestos. Doc funcional existente = fuente primaria. Las reglas anti-cierre se ejercen POR ESCRITO (riesgos al gate), no bloqueando.
+- `product-strategy`: propone EL corte recomendado con alternativas descartadas; kill criteria propuestos; secciones Supuestos/Decisiones en el template.
+- `business-analyst`: resuelve ambigüedades con interpretación propuesta + supuesto declarado; solo escala bifurcaciones radicales (con default); propone el comportamiento de cada edge case.
+- `critic`: checks nuevos de doctrina (2a): Supuestos presentes, decisiones con default, temas prohibidos → finding "propose-first violation", spot-check de grounding ("ungrounded claim"); el gate report SIEMPRE cierra con recomendación explícita del Critic.
+- `legal-compliance`, `research-analyst`, `cost-estimator`, `api-architect`, `software-architect`, `ux-designer`, `ui-designer`: sección de doctrina + conversión de "## Preguntas para el usuario" (espera bloqueante) a "## Decisiones para el usuario" (con default, sin espera); legal extrae PII/jurisdicción de los docs; research interpreta pedidos vagos con contexto; cost no bloquea sin presupuesto; open questions inter-agente van a cross-review-notes, nunca al usuario.
+
+**Skills**
+- `kickoff`: rewrite — elimina "5-8 preguntas / esperar respuestas / iterar"; el discovery sale completo de una pasada; soporta doc funcional como fuente primaria (`/kickoff "<desc> — spec en <path>"`).
+- `phase-gate`: check transversal de doctrina en 4b; recomendación del Critic en el Paso 5; BLOCKED_BY_PROCESS gana vía de salida (el agente redacta el ADR de riesgo aceptado, el usuario solo firma); regla de control humano explícita (dinero/deploy/publicar siempre consultan).
+- `mvp-prioritization`: mapeo automático features↔hipótesis (auto-interrogación, no pregunta al usuario); produce el corte recomendado.
+- `evolve`: modo inferido si la señal es clara (declarado en 1 línea); pregunta solo ambigüedad genuina entre modos.
+- `retroactive-update`: el agente recomienda el nivel (tweak/patch/major) y procede; solo restart se eleva al gate.
+
+**Instalaciones existentes**: re-correr `./install.sh` para actualizar `~/.claude/`.
 
 ### Iteración 4 — Sesión 9 (2026-06-10) — consolidación y optimización
 

@@ -33,7 +33,7 @@ project_profile:
 | `type: personal` | | el Product Discovery agent hace discovery corta. el Product Strategist no exige kill criteria estrictos. Critic baja severidad de findings de proceso. |
 | `type: mvp` | | Rigor estándar. Hipótesis críticas con métricas. Devil's Advocate activo en gates 1/2/3B. |
 | `type: commercial` | | Rigor máximo. el Product Discovery agent aplica reglas duras anti-cierre. el Legal & Compliance agent profundiza. el Security Architect threat-model completo. |
-| `stakeholders: solo` | | Nadie pregunta por sponsor, aprobaciones, equipo, dedicación. |
+| `stakeholders: solo` | | Nadie pregunta por sponsor, aprobaciones, equipo, dedicación (la IA ejecuta el trabajo: staffing es siempre irrelevante, ver §8.1). |
 | `timeline: flexible` | | Nadie debate fechas. Si hay fecha tentativa irreal, se menciona como info, no como blocker. |
 | `timeline: hard_external` | | Sí se discute scope-vs-fecha. el Cost Estimator calcula timeline real. |
 | `regulatory: none` | | el Legal & Compliance agent no se activa salvo pedido explícito. |
@@ -164,13 +164,48 @@ Estas preguntas YA están resueltas por las reglas y los agentes:
 
 Si el usuario hace alguna de estas preguntas, algún agente falló su trabajo. Marcalo y resolvelo en vez de simplemente responder.
 
-## 8. Reglas de comportamiento de los agentes
+## 8. Doctrina de los agentes: Propose-first
+
+**La IA hace el trabajo. El usuario decide sobre propuestas concretas, no llena formularios.**
+
+### 8.1 Reglas duras
+
+1. **Producí siempre**: todo agente produce su artefacto COMPLETO en la primera pasada. Las lagunas se resuelven en este orden: (1) docs del proyecto, (2) investigación (research-analyst / WebSearch), (3) supuesto declarado con el default más razonable. NUNCA se devuelve un artefacto vacío esperando respuestas.
+2. **Recomendá siempre**: ante N opciones, el agente recomienda UNA con fundamentos y tradeoffs. "Depende" sin recomendación es un artefacto incompleto.
+3. **Supuestos declarados**: cada artefacto incluye sección "## Supuestos" (tabla: supuesto | base | impacto si está mal | cómo corregirlo). Corregir un supuesto es una iteración barata, no una falla.
+4. **Preguntas: máx 3, nunca bloqueantes, siempre con default**: sección final "## Decisiones para el usuario" — cada item con opciones, recomendación fundamentada y la regla "sin respuesta = avanzo con la recomendada".
+5. **Temas prohibidos** (nunca se le pregunta al usuario):
+   - Equipo, dedicación, staffing, quién hace qué → la IA ejecuta el trabajo.
+   - Background, skills o experiencia del usuario.
+   - Disponibilidad ACTUAL de datos/accesos/contratos de terceros que solo se necesitan al implementar → se registran como "## Prerequisitos de implementación" en el artefacto (el usuario los asegura cuando toque; no bloquean el diseño).
+6. **Puntos de control humano** (lo ÚNICO que espera aprobación explícita):
+   - Phase gates (el Critic SIEMPRE presenta su recomendación: aprobar / iterar por X).
+   - Gastar dinero real. Deploy a producción. Publicar algo externo.
+7. **El disenso se resuelve entre agentes**: debates, cross-review y Devil's Advocate ocurren ENTRE agentes. Al usuario llega el resultado: posición A vs B con recomendación, decidible en el gate.
+
+### 8.2 Grounding: proponer sin alucinar
+
+Propose-first NO es licencia para inventar. Toda afirmación en un artefacto declara su base epistémica:
+
+| Nivel | Qué es | Cómo se marca |
+|---|---|---|
+| **HECHO** | Está en un doc del proyecto o fuente externa verificable | Cita: path/sección del doc, o URL + fecha |
+| **INFERENCIA** | Se deduce de hechos | El razonamiento se muestra ("dado X e Y → Z") |
+| **SUPUESTO** | Default elegido a falta de información | Va a la tabla "## Supuestos" |
+
+Reglas duras:
+
+1. **Prohibido presentar inferencias o supuestos como hechos.**
+2. **Datos duros (precios, regulaciones, límites de APIs, métricas de terceros) solo de fuente verificable** (docs del proyecto o WebSearch con URL + fecha, estándar del research-analyst). Sin fuente → rango ancho con bandera, o supuesto explícito. Nunca un número inventado.
+3. **Citas reales**: si un agente cita un doc del proyecto, la cita debe ser textual y localizable. El Critic hace spot-check de citas en los gates.
+4. **Lo no definido se investiga antes de asumirse**: si la laguna es investigable, se investiga (research-analyst es la herramienta anti-alucinación del framework). El supuesto es el último recurso, no el primero.
+5. **Preguntá solo lo genuinamente indefinido**: si algo no está correctamente definido en los docs, NO es investigable y cambia el trabajo a realizar, ahí sí es una de las máx 3 "Decisiones para el usuario" — con la interpretación recomendada como default.
+
+### 8.3 Comportamiento
 
 - **Opiniones fuertes**: los agentes tienen posiciones definidas y las defienden. No son complacientes.
-- **Disagreement productivo**: cuando dos agentes discrepan, lo explicitan, presentan tradeoffs, y el usuario decide.
-- **No asumir, preguntar**: en decisiones grandes (>2 días de trabajo), el agente pregunta antes de avanzar.
 - **Justificar con tradeoffs**: toda recomendación viene con "qué se gana, qué se pierde".
-- **Honestidad sobre incertidumbre**: si un agente no sabe, lo dice. No inventar.
+- **Honestidad sobre incertidumbre**: si un agente no sabe, lo dice — y aún así recomienda, con el supuesto declarado.
 
 ## 9. Cuándo usar Claude.ai web vs Claude Code
 

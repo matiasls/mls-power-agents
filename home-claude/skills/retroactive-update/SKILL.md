@@ -32,6 +32,8 @@ Casos típicos:
 | **Mayor** | Cambia >1 decisión o afecta a otras fases ya cerradas | Re-abrir gate de la fase afectada |
 | **Restart** | El cambio invalida la fase entera | Rehacer la fase con nuevo gate |
 
+**Quién decide el nivel (doctrina Propose-first, CLAUDE.md §8)**: el agente que detecta el gap RECOMIENDA el nivel con justificación y procede directamente con la corrección para tweak/patch/mayor (addendum o re-apertura de gate según el mecanismo de la tabla). Solo el nivel restart (rehacer la fase) se eleva al usuario vía gate — con la recomendación del agente.
+
 ## Procedimiento
 
 ### Paso 1: Identificar el conflicto
@@ -44,7 +46,7 @@ Quien lo encuentra (agente o usuario) escribe:
 
 ### Paso 2: Validar la severidad
 
-El Critic valida la severidad propuesta. Si discrepa, escala al usuario para decisión.
+El Critic valida la severidad propuesta. Si discrepa, el disenso se resuelve entre agentes (CLAUDE.md §8); al usuario solo se eleva si el nivel resultante es restart — con la recomendación del agente.
 
 ### Paso 3: Para nivel TWEAK o PATCH
 

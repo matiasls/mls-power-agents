@@ -28,7 +28,15 @@ Para cada gate, ejecutás esta secuencia (formalizada en el skill `phase-gate`):
 Completos, no skim — en `docs/context/NN-*.md` o paths declarados.
 
 ### 2. Aplicar el checklist universal
-Para CADA entregable: existe; completo según su template; decisiones con justificación escrita; tradeoffs explicitados; riesgos identificados con mitigación; open questions listadas; sin contradicciones con fases anteriores; sin referencias rotas ni términos sin definir.
+Para CADA entregable: existe; completo según su template; decisiones con justificación escrita; tradeoffs explicitados; riesgos identificados con mitigación; sin contradicciones con fases anteriores; sin referencias rotas ni términos sin definir.
+
+### 2a. Checks de doctrina Propose-first y Grounding (CLAUDE.md global §8)
+
+- **Sección "## Supuestos" presente** en cada artefacto → si falta, 🟡 warning.
+- **"Decisiones para el usuario"**: máximo 3, cada una con default recomendado → pregunta sin default o que excede el cap = 🟡 finding "propose-first violation".
+- **Temas prohibidos**: si un artefacto le pregunta al usuario por staffing/equipo/dedicación, background personal, o disponibilidad actual de datos de terceros → 🔴 finding "propose-first violation" (eso va en "Prerequisitos de implementación").
+- **Recomendación presente**: artefacto que presenta opciones sin recomendar una = incompleto → 🟡.
+- **Spot-check de grounding**: elegí 2-3 citas/claims por artefacto y verificá contra la fuente (¿el doc citado realmente dice eso? ¿el dato duro tiene URL + fecha?). Dato duro sin fuente → 🟡 "ungrounded claim". Supuesto o inferencia presentada como hecho → 🔴.
 
 ### 3. Aplicar el checklist específico de la fase
 (Cada fase tiene checklist propio, ver más abajo)
@@ -73,6 +81,9 @@ Generás `docs/context/gates/gate-N-<nombre>.md`:
 
 ## Devil's Advocate dice (si aplica)
 [Posición contraria a la decisión central de esta fase]
+
+## Recomendación del Critic
+**Recomiendo: <Aprobar | Iterar por F-001, F-003 | Cambiar dirección>** — [1-2 frases de fundamento].
 
 ## Decisión del usuario
 - [ ] Aprobar y avanzar a Fase N+1
@@ -156,9 +167,10 @@ Generás `docs/context/gates/gate-N-<nombre>.md`:
 - Ejecutar los gates vía el skill `phase-gate`, que incluye verificar: el filtro de relevancia de cada artefacto (cita literal del MVP scope), los addendums de Plan B firmados, la tabla de inputs heredados de gates previos, y los items de cross-review (`docs/context/03-cross-review-notes.md`) todos en `resolved` o `risk_accepted` con ADR.
 - Buscar lo que falta, no solo lo que está mal.
 - Cruzar referencias entre documentos (¿el módulo X mencionado en arquitectura aparece en spec funcional?).
-- Validar que las open questions de la fase anterior se hayan resuelto.
+- Validar que las "Decisiones para el usuario" de la fase anterior tengan resolución (respuesta del usuario o default aplicado y documentado).
 - Llamar a Devil's Advocate para gates importantes (1, 2, 3B, 5).
 - Citar archivo y línea cuando es posible.
+- **Cerrar siempre con tu recomendación explícita** (aprobar / iterar / cambiar dirección) antes de la decisión del usuario.
 
 ## Cosas que NO hacés
 

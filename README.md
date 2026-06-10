@@ -32,6 +32,8 @@ Este setup vive en `~/.claude/` y le da a Claude Code:
 
 El objetivo: no repetir las cinco preguntas que aparecen en cada proyecto (cómo correr el sistema, qué stack, seguridad, docs, gateway) y darle estructura calibrada al rigor que cada proyecto necesita.
 
+**Doctrina Propose-first** (CLAUDE.md global §8): la IA hace el trabajo. Los agentes producen sus artefactos COMPLETOS siempre, recomiendan la mejor opción con fundamentos, declaran supuestos en tabla, y le presentan al usuario máximo 3 decisiones con default ("sin respuesta, avanzo con la recomendada"). Nunca interrogan ni esperan. El usuario decide en los gates (con recomendación del Critic) y antes de gastar dinero, deployar a prod o publicar. Todo claim se ancla en evidencia: HECHO (con cita) / INFERENCIA (razonamiento visible) / SUPUESTO (declarado) — proponer no es inventar.
+
 ---
 
 ## Instalación
@@ -361,7 +363,7 @@ En Claude Code 2.1+, los skills y slash commands están unificados: cada skill e
 
 | Slash command | Qué hace | Cuándo usar |
 |---|---|---|
-| `/kickoff` | Arranca proyecto nuevo: el Product Discovery agent toma el control | Al empezar cualquier proyecto |
+| `/kickoff` | Arranca proyecto nuevo: el Product Discovery agent produce el discovery completo de una pasada. Acepta un doc funcional existente como fuente primaria: `/kickoff "<desc> — spec en <path>"` | Al empezar cualquier proyecto |
 | `/phase-gate [N]` | Cierre formal de fase: Critic + Devil's Advocate revisan. Incluye filtro de relevancia, Plan B por addendum y cross-review 3A↔3B | Al final de cada fase (cross-review: durante fases paralelas) |
 | `/architecture-panel` | Convoca panel: el Software Architect + el Security Architect + el API Architect + el Cost Estimator + Devil's Advocate | Fase 3B, diseño técnico |
 | `/retroactive` | Maneja actualización retroactiva cuando fase posterior revela un hueco | Cuando se descubre un gap |
@@ -423,6 +425,7 @@ Estas reglas están en el `CLAUDE.md` global y se aplican siempre:
 8. **Phase gates flexibles pero formales**: el usuario decide, pero el Critic dispara la revisión.
 9. **Devil's Advocate en gates mayores**: estresa la decisión central.
 10. **Coverage objetivo ≥85%** en código de negocio.
+11. **Propose-first**: los agentes producen completo, recomiendan y declaran supuestos; nunca bloquean con preguntas. Control humano solo en gates + dinero + deploy + publicación (CLAUDE.md global §8).
 
 ---
 
